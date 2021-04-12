@@ -8,15 +8,31 @@
     <link rel="stylesheet" href="styles/styles.css">
 </head>
 <body>
+    
     <div class="hero-image">
         <div class="hero-text">
             <h1>Hello, I'm Spencer Warnick</h1>
             <p>A computer science major, baker, and father.</p>
+            <div class="dropdown">
+                <button class="dropbutton">Check Me Out!</button>
+                    <div class="dropdown-content">
+                        <a href="#Home">Home</a>
+                        <a href="#Reading">Reading</a>
+                        <a href="#About">About</a>
+                        <a href="#Schedule">Schedule</a>
+                    </div>
+            </div>
         </div>
     </div>
-    <h1>Spencer Warnick</h1>
+    <div class="navbar">
+        <a href="#Home">Home</a>
+        <a href="#Reading">Reading</a>
+        <a href="#About">About</a>
+        <a href="#Schedule">Schedule</a>
+    </div>
+    <h1 id="Home">Spencer Warnick</h1>
     <img src="images/Portait-Spencer.jpg" alt="">
-    <h2>Personal Info</h2>
+    <h2 id="About">Personal Info</h2>
     <ul>
         <li><b>Major:</b> Bachelors of Computer Science</li>
         <li><b>High School:</b> Lehi High School, 2017</li>
@@ -24,7 +40,7 @@
         <li><b>Favorite Ice Cream:</b> Brownie Dough</li>
     </ul>
 
-    <h2>My Five Favorite Books</h2>
+    <h2 id="Reading">My Five Favorite Books</h2>
     <ol>
         <li><i>Mindset: The New Psychology of Success,</i> <a href="https://profiles.stanford.edu/carol-dweck?tab=bio">Carol Dweck</a></li>
         <li><i>The Rent Collector,</i> <a href="https://authorcamronwright.com/index.html">Camron Wright</a></li>
@@ -57,7 +73,7 @@
         I admire those who make weightlifting a supeior hobby and aspire to be  like them.
     </p>
 
-    <h2>Class Schedule</h2>
+    <h2 id="Schedule">Class Schedule</h2>
     <table>
         <tr>
             <th></th>
