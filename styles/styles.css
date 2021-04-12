@@ -3,3 +3,22 @@ table, tr, th, td{
     border-spacing: 3px;
     padding: 3px;
 }
+
+body {
+    font-family: sans-serif;
+}
+
+h1 {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.hero-image {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("C:/Users/spenn/Desktop/COLLEGE/CS 2550/Project 1/spwarnick.github.io/images/Hero-Image.jpg");
+
+    height: 50%;
+
+    background-position: right;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
