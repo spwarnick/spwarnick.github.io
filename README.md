@@ -15,3 +15,22 @@ and webpage scrolled on.
 
 # Nav Menu
 Navagation menu was used and put inside of hero image. 
+
+ # Nav Menu Highlights
+ The items become highlighted when hovered on.
+
+# Nav Bar
+A navagation bar was also added that is fixed when scrolling past the hero image.
+
+# Repeating Background Image
+A hyperlink section was made so that they only underline when hovered on.
+The poem was indented to the center, with a box around it.
+
+# Weekly Schedule
+I chose to do the text alignment and equal column widths.
+
+# Striped Table Rows
+Table is Striped!
+
+# Favicon 
+Added a tree favicon to the browser tab

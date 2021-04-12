@@ -6,9 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Spencer Warnick</title>
     <link rel="stylesheet" href="styles/styles.css">
+    <link rel="shortcut icon" href="../spwarnick.github.io/images/deciduous-tree.png">
+    <link rel="Javascript" href="../spwarnick.github.io/moves.js">
 </head>
 <body>
-    
+    <div class="navigationbar">
+        <a href="#Home">Home</a>
+        <a href="#Reading">Reading</a>
+        <a href="#About">About</a>
+        <a href="#Schedule">Schedule</a>
+    </div>
     <div class="hero-image">
         <div class="hero-text">
             <h1>Hello, I'm Spencer Warnick</h1>
@@ -24,14 +31,35 @@
             </div>
         </div>
     </div>
-    <div class="navbar">
-        <a href="#Home">Home</a>
-        <a href="#Reading">Reading</a>
-        <a href="#About">About</a>
-        <a href="#Schedule">Schedule</a>
-    </div>
+
     <h1 id="Home">Spencer Warnick</h1>
-    <img src="images/Portait-Spencer.jpg" alt="">
+    <div class="popup">
+        <img src="images/Portait-Spencer.jpg" alt="Portrait">
+    </div>
+    <div class="show">
+        <div class="overlay"></div>
+        <div class="imgShow">
+            <span>&times;</span>
+            <img src="" alt="">
+        </div>
+        </div>
+        <button onclick="document.getElementById('img01').style.display='block'" class="button-black"<img src="images/Portait-Spencer.jpg" alt="Portrait"></button>
+        <div id="img01" class="modal">
+            <div class="modal-content">
+                <div class="modal-container">
+                    <span onclick="document.getElementById('img01').style.display='none'" class="buttonTopLeft">&times;</span>
+                    <img src="='images/Portait-Spencer.jpg'" alt="">
+                </div>
+            </div>
+        
+        </div>
+    </div>
+    <img id="myImg" src="images/Portait-Spencer.jpg" alt="Portrait" style="width: 100%;max-width: 300px;">
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="img01">
+        <div id="caption"></div>
+    </div>
     <h2 id="About">Personal Info</h2>
     <ul>
         <li><b>Major:</b> Bachelors of Computer Science</li>
@@ -48,11 +76,16 @@
         <li><i>Wonder,</i> <a href="https://wonderthebook.com/about">R.J. Palacio</a></li>
         <li><i>Have a Little Faith,</i> <a href="https://www.mitchalbom.com/">Mitch Albom</a></li>
     </ol>
-
-    <h2>A Day at the Bakery</h2>
+    <div class="poemBox">
+    <div id="poem" class="container">
+    <h2 id="poem">A Day at the Bakery</h2>
+    </div>
+    <div id="poem" class="container">
     Fresh aromas There<br>
     Filling the place, flour in air<br>
     Cut, Knead, Shape, Proof, Bake<br>
+    </div>
+    </div>
 
     <h2>My Personal Interests</h2>
     <p>
@@ -219,6 +252,6 @@
 
     </table>
 
-
+<div class="footer">Copywright &copy; 2021 &mdash; Spencer Warnick</div>
 </body>
 </html>

@@ -3,7 +3,11 @@ table, tr, th, td{
     border-spacing: 3px;
     padding: 3px;
 }
-
+body {
+    background-image: url(../images/Background-Image.jpg);
+    background-repeat: repeat;
+    background-attachment: fixed;
+}
 body, html {
     font-family: sans-serif;
     height: 100%;
@@ -81,14 +85,17 @@ h1 {
 
 .dropdown:hover .dropbutton {background-color: cornflowerblue;}
 
-.navbar {
+.navigationbar {
+    visibility: visible;
+    position: fixed;
+    top: 0px;
+    width: 100%;
     overflow: hidden;
     background-color: black;
-    position: sticky;
-    top: 0px;
+    
 }
 
-.navbar a {
+.navigationbar a {
     float: left;
     display: block;
     color: grey;
@@ -96,3 +103,98 @@ h1 {
     padding: 14px;
     text-decoration: none;
 }
+
+.navigationbar a:hover {
+    background: grey;
+    color: black;
+}
+
+.footer {
+    position: sticky;
+    bottom: 0px;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+}
+
+.poemBox {
+    width: 300px;
+    border: 7px solid grey;
+    margin: auto;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+table * {
+    text-align: left;
+    vertical-align: top;
+    table-layout: fixed;
+}
+
+th {
+    background: indianred;
+}
+
+tr:nth-child(even) {
+    background: ivory;
+}
+
+.popup {
+    width: 900px;
+    margin: auto;
+    text-align: center;
+
+}
+ .popup img {
+     width: 200px;
+     height: 200px;
+     cursor: pointer;
+ }
+ .show  {
+     z-index: 999;
+     display: none;
+ }
+ .show .overlay {
+     width: 100%;
+     height: 100%;  
+     background: rgba(0, 0, 0, 0.66);
+     position: absolute;    
+     top: 0;
+     left: 0;
+
+ }
+
+ .show .imgShow {
+     width: 600px;
+     height: 400px;
+     background: #FFF;
+     position: absolute;    
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+     overflow: hidden;
+ }
+
+ .imgShow span {
+     position: absolute;
+     top: 10px;
+     right: 10px;
+     z-index: 99;
+     cursor: pointer;
+ }
+
+ .imgShow img {
+     width: 100%;
+     height: 100%;
+     position: absolute;    
+     top: 0;    
+     left: 0;
+ }
