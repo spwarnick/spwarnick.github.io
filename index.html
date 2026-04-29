@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spencer Warnick | Cybersecurity Professional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #112240;
+    --navy-light: #1e3a5f;
+    --steel: #2a5298;
+    --accent: #4a9edd;
+    --accent-dim: #2d7ab8;
+    --teal: #2ec4b6;
+    --text-primary: #e8edf5;
+    --text-secondary: #8fa8c8;
+    --text-muted: #5a7a9a;
+    --border: rgba(74, 158, 221, 0.15);
+    --border-hover: rgba(74, 158, 221, 0.35);
+    --card-bg: rgba(17, 34, 64, 0.6);
+    --tag-bg: rgba(74, 158, 221, 0.1);
+    --tag-border: rgba(74, 158, 221, 0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--navy);
+    color: var(--text-primary);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy); }
+  ::-webkit-scrollbar-thumb { background: var(--steel); border-radius: 3px; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 3rem;
+    height: 64px;
+    background: rgba(10, 22, 40, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 6rem 10% 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74,158,221,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,158,221,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(74,158,221,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    max-width: 700px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+    vertical-align: middle;
+    margin-right: 12px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+  }
+
+  h1 .accent-word {
+    color: var(--accent);
+  }
+
+  .hero-bio {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    max-width: 560px;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 3rem;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 5px 14px;
+    border: 1px solid var(--tag-border);
+    background: var(--tag-bg);
+    color: var(--accent);
+    border-radius: 3px;
+    letter-spacing: 0.03em;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 12px 28px;
+    background: var(--accent);
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .btn-primary:hover { background: #5fb0ef; transform: translateY(-1px); }
+
+  .btn-outline {
+    display: inline-block;
+    padding: 12px 28px;
+    border: 1px solid var(--border-hover);
+    color: var(--accent);
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  }
+
+  .btn-outline:hover { border-color: var(--accent); background: var(--tag-bg); transform: translateY(-1px); }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 6rem 10%;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .about-text p {
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    line-height: 1.85;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: var(--border-hover); }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--accent);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* ── SKILLS ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .skill-category {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .skill-category:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+
+  .skill-category-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .skill-list {
+    list-style: none;
+  }
+
+  .skill-list li {
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .skill-list li::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    background: var(--teal);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── CERTIFICATIONS ── */
+  .cert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .cert-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .cert-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+
+  .cert-issuer {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal);
+  }
+
+  .cert-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .cert-date {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: auto;
+  }
+
+  .cert-status {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    background: rgba(46,196,182,0.1);
+    border: 1px solid rgba(46,196,182,0.3);
+    color: var(--teal);
+    width: fit-content;
+  }
+
+  .cert-status.planned {
+    background: rgba(74,158,221,0.1);
+    border-color: rgba(74,158,221,0.3);
+    color: var(--accent);
+  }
+
+  /* ── PROJECTS ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.75rem;
+  }
+
+  .project-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .project-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
+
+  .project-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+  }
+
+  .project-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+
+  .project-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    flex: 1;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 0.5rem;
+  }
+
+  .project-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border: 1px solid var(--tag-border);
+    background: var(--tag-bg);
+    color: var(--accent);
+    border-radius: 3px;
+  }
+
+  .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    transition: gap 0.2s;
+  }
+
+  .project-link:hover { gap: 10px; }
+
+  /* ── CTF ── */
+  .ctf-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .ctf-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: start;
+    transition: border-color 0.2s;
+  }
+
+  .ctf-item:hover { border-color: var(--border-hover); border-left-color: var(--teal); }
+
+  .ctf-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .ctf-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .ctf-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .ctf-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .badge-web { background: rgba(74,158,221,0.1); border: 1px solid rgba(74,158,221,0.3); color: var(--accent); }
+  .badge-crypto { background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.3); color: var(--teal); }
+  .badge-forensics { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); color: #c084fc; }
+  .badge-pwn { background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.3); color: #fb923c; }
+  .badge-misc { background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.3); color: #94a3b8; }
+
+  /* ── CONTACT ── */
+  #contact {
+    background: var(--navy-mid);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 6rem 10%;
+  }
+
+  .contact-intro {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.8;
+  }
+
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: 1px solid var(--border-hover);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .contact-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--tag-bg);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--teal));
+    margin-bottom: 2rem;
+    border-radius: 2px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 0 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 6%; }
+    #hero { padding: 6rem 6% 3rem; }
+    .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    h1 { font-size: 2.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">SW // sec</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#certifications">Certs</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#ctf">CTF</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Cybersecurity Professional</p>
+    <h1>Spencer<br /><span class="accent-word">Warnick</span></h1>
+    <p class="hero-bio">
+      M.S. Cybersecurity graduate with hands-on experience across penetration testing, security operations, cloud security, and GRC. I bridge technical depth with strategic thinking to identify, analyze, and mitigate threats across complex environments.
+    </p>
+    <div class="hero-tags">
+      <span class="tag">Penetration Testing</span>
+      <span class="tag">SOC / Blue Team</span>
+      <span class="tag">Cloud Security</span>
+      <span class="tag">GRC / Compliance</span>
+      <span class="tag">CTF Competitor</span>
+    </div>
+    <div class="hero-actions">
+      <a href="#projects" class="btn-primary">View My Work</a>
+      <a href="https://www.linkedin.com/in/spwarnick" target="_blank" rel="noopener" class="btn-outline">LinkedIn ↗</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <p class="section-label">01 — About</p>
+  <div class="section-divider"></div>
+  <h2>Background</h2>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        I'm a cybersecurity professional holding a Master of Science in Cybersecurity, with a foundation built through rigorous academic coursework, hands-on lab environments, and real-world Capture the Flag competitions.
+      </p>
+      <p>
+        My work spans the full security spectrum — from offensive security and vulnerability assessment to defensive monitoring, incident response, and governance, risk, and compliance (GRC) frameworks. I'm comfortable moving between red and blue team perspectives, which gives me a well-rounded view of the threat landscape.
+      </p>
+      <p>
+        I'm actively seeking roles where I can apply my technical skills, continue growing, and contribute meaningfully to an organization's security posture.
+      </p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-number">M.S.</span>
+        <span class="stat-label">Cybersecurity Graduate</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">4+</span>
+        <span class="stat-label">Security Domains</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">CTF</span>
+        <span class="stat-label">Active Competitor</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">Lab</span>
+        <span class="stat-label">Hands-On Experience</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills" style="background: var(--navy-mid);">
+  <p class="section-label">02 — Skills</p>
+  <div class="section-divider"></div>
+  <h2>Technical Expertise</h2>
+  <div class="skills-grid">
+    <div class="skill-category">
+      <p class="skill-category-title">Offensive Security</p>
+      <ul class="skill-list">
+        <li>Penetration Testing</li>
+        <li>Vulnerability Assessment</li>
+        <li>Exploit Development</li>
+        <li>Social Engineering</li>
+        <li>Web App Security (OWASP)</li>
+      </ul>
+    </div>
+    <div class="skill-category">
+      <p class="skill-category-title">SOC / Blue Team</p>
+      <ul class="skill-list">
+        <li>SIEM / Log Analysis</li>
+        <li>Incident Response</li>
+        <li>Threat Hunting</li>
+        <li>Digital Forensics</li>
+        <li>Malware Analysis</li>
+      </ul>
+    </div>
+    <div class="skill-category">
+      <p class="skill-category-title">Cloud Security</p>
+      <ul class="skill-list">
+        <li>AWS / Azure Security</li>
+        <li>IAM & Access Control</li>
+        <li>Cloud Misconfiguration Audits</li>
+        <li>Container Security</li>
+        <li>Zero Trust Architecture</li>
+      </ul>
+    </div>
+    <div class="skill-category">
+      <p class="skill-category-title">GRC & Compliance</p>
+      <ul class="skill-list">
+        <li>Risk Assessment & Management</li>
+        <li>NIST CSF / SP 800-53</li>
+        <li>ISO 27001</li>
+        <li>Security Policy Development</li>
+        <li>Audit & Compliance Review</li>
+      </ul>
+    </div>
+    <div class="skill-category">
+      <p class="skill-category-title">Tools & Platforms</p>
+      <ul class="skill-list">
+        <li>Kali Linux / Parrot OS</li>
+        <li>Metasploit / Burp Suite</li>
+        <li>Wireshark / Nmap / Nessus</li>
+        <li>Splunk / Elastic SIEM</li>
+        <li>Python / Bash Scripting</li>
+      </ul>
+    </div>
+    <div class="skill-category">
+      <p class="skill-category-title">Networking & Systems</p>
+      <ul class="skill-list">
+        <li>TCP/IP & Network Protocols</li>
+        <li>Firewall & IDS/IPS</li>
+        <li>Active Directory</li>
+        <li>Windows & Linux Administration</li>
+        <li>VPN & Secure Communications</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICATIONS -->
+<section id="certifications">
+  <p class="section-label">03 — Certifications</p>
+  <div class="section-divider"></div>
+  <h2>Credentials</h2>
+  <div class="cert-grid">
+
+    <!-- Replace these placeholder cards with your actual certifications -->
+    <div class="cert-card">
+      <p class="cert-issuer">CompTIA</p>
+      <p class="cert-name">Security+</p>
+      <span class="cert-status">Earned</span>
+      <p class="cert-date">Add date here</p>
+    </div>
+
+    <div class="cert-card">
+      <p class="cert-issuer">CompTIA</p>
+      <p class="cert-name">Network+</p>
+      <span class="cert-status">Earned</span>
+      <p class="cert-date">Add date here</p>
+    </div>
+
+    <div class="cert-card">
+      <p class="cert-issuer"><!-- Issuer --></p>
+      <p class="cert-name">Add Your Certification Here</p>
+      <span class="cert-status">Earned</span>
+      <p class="cert-date">Add date here</p>
+    </div>
+
+    <div class="cert-card">
+      <p class="cert-issuer"><!-- Issuer --></p>
+      <p class="cert-name">Add Planned Certification Here</p>
+      <span class="cert-status planned">In Progress</span>
+      <p class="cert-date">Expected: add date</p>
+    </div>
+
+    <div class="cert-card">
+      <p class="cert-issuer">University</p>
+      <p class="cert-name">Master of Science in Cybersecurity</p>
+      <span class="cert-status">Completed</span>
+      <p class="cert-date">Add graduation year</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" style="background: var(--navy-mid);">
+  <p class="section-label">04 — Projects</p>
+  <div class="section-divider"></div>
+  <h2>Featured Work</h2>
+  <div class="projects-grid">
+
+    <!-- Replace these with your actual projects -->
+    <div class="project-card">
+      <p class="project-number">01</p>
+      <p class="project-title">Project Title Here</p>
+      <p class="project-desc">
+        Brief description of what you built, what problem it solved, and what you learned. Aim for 2–3 sentences that highlight the scope and your role.
+      </p>
+      <div class="project-tags">
+        <span class="project-tag">Python</span>
+        <span class="project-tag">Network Security</span>
+        <span class="project-tag">Automation</span>
+      </div>
+      <a href="#" class="project-link">View Writeup →</a>
+    </div>
+
+    <div class="project-card">
+      <p class="project-number">02</p>
+      <p class="project-title">Project Title Here</p>
+      <p class="project-desc">
+        Brief description of what you built, what problem it solved, and what you learned. Aim for 2–3 sentences that highlight the scope and your role.
+      </p>
+      <div class="project-tags">
+        <span class="project-tag">Splunk</span>
+        <span class="project-tag">SIEM</span>
+        <span class="project-tag">Incident Response</span>
+      </div>
+      <a href="#" class="project-link">View Writeup →</a>
+    </div>
+
+    <div class="project-card">
+      <p class="project-number">03</p>
+      <p class="project-title">Project Title Here</p>
+      <p class="project-desc">
+        Brief description of what you built, what problem it solved, and what you learned. Aim for 2–3 sentences that highlight the scope and your role.
+      </p>
+      <div class="project-tags">
+        <span class="project-tag">AWS</span>
+        <span class="project-tag">Cloud Security</span>
+        <span class="project-tag">IAM</span>
+      </div>
+      <a href="#" class="project-link">View Writeup →</a>
+    </div>
+
+    <div class="project-card">
+      <p class="project-number">04</p>
+      <p class="project-title">Project Title Here</p>
+      <p class="project-desc">
+        Brief description of what you built, what problem it solved, and what you learned. Aim for 2–3 sentences that highlight the scope and your role.
+      </p>
+      <div class="project-tags">
+        <span class="project-tag">Penetration Testing</span>
+        <span class="project-tag">Kali Linux</span>
+        <span class="project-tag">Reporting</span>
+      </div>
+      <a href="#" class="project-link">View Writeup →</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTF -->
+<section id="ctf">
+  <p class="section-label">05 — CTF Writeups</p>
+  <div class="section-divider"></div>
+  <h2>Capture the Flag</h2>
+  <div class="ctf-list">
+
+    <!-- Replace these with your actual CTF writeups -->
+    <div class="ctf-item">
+      <div>
+        <p class="ctf-title">Challenge Name — CTF Event Name</p>
+        <div class="ctf-meta">
+          <span>Year</span>
+          <span>Difficulty: Medium</span>
+          <span>Points: XXX</span>
+        </div>
+        <p class="ctf-desc">
+          Brief description of the challenge, your approach, key techniques used, and what you learned. Keep it technical but accessible.
+        </p>
+      </div>
+      <span class="ctf-badge badge-web">Web</span>
+    </div>
+
+    <div class="ctf-item">
+      <div>
+        <p class="ctf-title">Challenge Name — CTF Event Name</p>
+        <div class="ctf-meta">
+          <span>Year</span>
+          <span>Difficulty: Hard</span>
+          <span>Points: XXX</span>
+        </div>
+        <p class="ctf-desc">
+          Brief description of the challenge, your approach, key techniques used, and what you learned. Keep it technical but accessible.
+        </p>
+      </div>
+      <span class="ctf-badge badge-crypto">Crypto</span>
+    </div>
+
+    <div class="ctf-item">
+      <div>
+        <p class="ctf-title">Challenge Name — CTF Event Name</p>
+        <div class="ctf-meta">
+          <span>Year</span>
+          <span>Difficulty: Easy</span>
+          <span>Points: XXX</span>
+        </div>
+        <p class="ctf-desc">
+          Brief description of the challenge, your approach, key techniques used, and what you learned. Keep it technical but accessible.
+        </p>
+      </div>
+      <span class="ctf-badge badge-forensics">Forensics</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <p class="section-label">06 — Contact</p>
+  <div class="section-divider" style="margin: 0 auto 1.5rem;"></div>
+  <h2 style="border: none; margin-bottom: 1.25rem;">Let's Connect</h2>
+  <p class="contact-intro">
+    I'm actively seeking cybersecurity opportunities. Whether you have a role in mind, want to collaborate, or just want to talk security — feel free to reach out.
+  </p>
+  <div class="contact-links">
+    <a href="https://www.linkedin.com/in/spwarnick" target="_blank" rel="noopener" class="contact-link">
+      LinkedIn ↗
+    </a>
+    <a href="mailto:your.email@example.com" class="contact-link">
+      Email ↗
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Spencer Warnick &mdash; Cybersecurity Portfolio &mdash; Built with GitHub Pages</p>
+</footer>
+
+</body>
+</html>
