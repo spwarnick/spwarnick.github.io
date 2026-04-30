@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Man-in-the-Middle Attacks | Spencer Warnick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0a1628; --navy-mid: #112240;
+    --accent: #4a9edd; --teal: #2ec4b6; --purple: #a78bfa;
+    --text-primary: #e8edf5; --text-secondary: #8fa8c8; --text-muted: #5a7a9a;
+    --border: rgba(74,158,221,0.15); --border-hover: rgba(74,158,221,0.35);
+    --card-bg: rgba(17,34,64,0.6); --tag-bg: rgba(74,158,221,0.1); --tag-border: rgba(74,158,221,0.3);
+    --code-bg: rgba(0,0,0,0.35);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--text-primary); line-height: 1.7; font-size: 16px; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--navy); } ::-webkit-scrollbar-thumb { background: #2a5298; border-radius: 3px; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 3rem; height: 64px; background: rgba(10,22,40,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--accent); }
+
+  .project-hero { padding: 8rem 10% 4rem; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+  .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(74,158,221,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(74,158,221,0.04) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; }
+  .hero-glow { position: absolute; top: -20%; right: -5%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(167,139,250,0.07) 0%, transparent 65%); pointer-events: none; }
+
+  .breadcrumb { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em; margin-bottom: 1.5rem; position: relative; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; } .breadcrumb a:hover { text-decoration: underline; }
+  .project-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 600; line-height: 1.15; color: var(--text-primary); margin-bottom: 1.25rem; position: relative; max-width: 800px; }
+  .project-hero h1 .accent { color: var(--purple); }
+  .project-meta { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem; position: relative; }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .meta-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 8px; position: relative; }
+  .tool-tag { font-family: 'DM Mono', monospace; font-size: 11px; padding: 4px 12px; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); border-radius: 3px; }
+  .tool-tag.purple { border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.08); color: var(--purple); }
+  .tool-tag.teal { border-color: rgba(46,196,182,0.3); background: rgba(46,196,182,0.08); color: var(--teal); }
+
+  .content-wrapper { max-width: 1100px; margin: 0 auto; padding: 4rem 10%; display: grid; grid-template-columns: 1fr 300px; gap: 4rem; align-items: start; }
+  .main-content { min-width: 0; }
+  .sidebar { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 1.5rem; }
+  .sidebar-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; }
+  .sidebar-card-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+  .sidebar-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .sidebar-list li { font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .sidebar-list li::before { content: ''; display: inline-block; width: 4px; height: 4px; background: var(--teal); border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .toc-list a { font-size: 13px; color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; padding: 4px 0 4px 10px; border-left: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .toc-list a:hover { color: var(--accent); border-left-color: var(--accent); }
+
+  .writeup-section { margin-bottom: 3.5rem; }
+  .section-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .section-divider { width: 48px; height: 2px; background: linear-gradient(90deg, var(--purple), var(--teal)); margin-bottom: 1.5rem; border-radius: 2px; }
+  .writeup-section h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .writeup-section h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 1.75rem 0 0.75rem; display: flex; align-items: center; gap: 10px; }
+  .writeup-section h3::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--purple); border-radius: 1px; flex-shrink: 0; }
+  .writeup-section p { font-size: 15px; color: var(--text-secondary); line-height: 1.85; margin-bottom: 1rem; }
+
+  .lab-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0; }
+  .lab-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; transition: border-color 0.2s; }
+  .lab-card:hover { border-color: var(--border-hover); }
+  .lab-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .lab-num { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); color: var(--purple); flex-shrink: 0; }
+  .lab-card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+  .lab-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .lab-card ul li { font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .lab-card ul li::before { content: '→'; color: var(--purple); font-size: 11px; margin-top: 2px; flex-shrink: 0; }
+
+  .phase-list { display: flex; flex-direction: column; gap: 1rem; margin: 1rem 0; }
+  .phase-item { display: grid; grid-template-columns: 36px 1fr; gap: 1rem; align-items: start; }
+  .phase-num { width: 36px; height: 36px; border-radius: 50%; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--purple); flex-shrink: 0; margin-top: 2px; }
+  .phase-content strong { display: block; font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .phase-content span { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  .code-block { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--purple); border-radius: 0 6px 6px 0; padding: 1rem 1.25rem; margin: 1rem 0; overflow-x: auto; }
+  .code-block-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .code-block code { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal); white-space: pre; display: block; line-height: 1.7; }
+  .code-block code .comment { color: var(--text-muted); font-style: italic; }
+
+  .finding-box { background: rgba(167,139,250,0.05); border: 1px solid rgba(167,139,250,0.2); border-radius: 6px; padding: 1.25rem; margin: 1.25rem 0; }
+  .finding-box-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--purple); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .finding-box p { font-size: 14px; color: var(--text-secondary); margin: 0; }
+
+  .flow-diagram { display: flex; align-items: center; justify-content: center; gap: 0; margin: 1.5rem 0; flex-wrap: wrap; }
+  .flow-node { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1.1rem; text-align: center; min-width: 110px; }
+  .flow-node .node-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+  .flow-node .node-ip { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .flow-node.attacker { border-color: rgba(167,139,250,0.4); }
+  .flow-node.attacker .node-ip { color: var(--purple); }
+  .flow-arrow { font-size: 18px; color: var(--purple); padding: 0 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .flow-arrow span { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-muted); letter-spacing: 0.05em; white-space: nowrap; }
+
+  .screenshot-placeholder { background: var(--card-bg); border: 1px dashed var(--border-hover); border-radius: 6px; padding: 2.5rem; text-align: center; margin: 1.25rem 0; }
+  .screenshot-placeholder p { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.05em; margin: 0; }
+
+  .project-footer { border-top: 1px solid var(--border); padding: 3rem 10%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .footer-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+  .footer-back:hover { color: var(--accent); }
+  .footer-copy { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
+
+  @media (max-width: 900px) {
+    .content-wrapper { grid-template-columns: 1fr; } .sidebar { position: static; }
+    .lab-split { grid-template-columns: 1fr; } nav { padding: 0 1.5rem; }
+    .project-hero { padding: 7rem 6% 3rem; } .content-wrapper { padding: 3rem 6%; }
+    .flow-diagram { gap: 8px; } .flow-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">SW // sec</a>
+  <a href="index.html#projects" class="nav-back">← Back to Portfolio</a>
+</nav>
+
+<div class="project-hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <p class="breadcrumb"><a href="index.html">Portfolio</a> &nbsp;/&nbsp; <a href="index.html#projects">Projects</a> &nbsp;/&nbsp; IT 6300</p>
+  <h1>Man-in-the-<span class="accent">Middle</span> Attacks</h1>
+  <div class="project-meta">
+    <div class="meta-item"><span class="meta-label">Course</span><span class="meta-value">IT 6300</span></div>
+    <div class="meta-item"><span class="meta-label">Level</span><span class="meta-value">Graduate Coursework</span></div>
+    <div class="meta-item"><span class="meta-label">Labs</span><span class="meta-value">2 — ARP Poisoning & TCP Hijacking</span></div>
+    <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Network Security</span></div>
+  </div>
+  <div class="tool-tags">
+    <span class="tool-tag">Ettercap</span>
+    <span class="tool-tag">Wireshark</span>
+    <span class="tool-tag">Scapy</span>
+    <span class="tool-tag">Python</span>
+    <span class="tool-tag">Kali Linux</span>
+    <span class="tool-tag purple">ARP Poisoning</span>
+    <span class="tool-tag purple">TCP Hijacking</span>
+    <span class="tool-tag teal">Telnet</span>
+    <span class="tool-tag teal">Credential Interception</span>
+  </div>
+</div>
+
+<div class="content-wrapper">
+  <main class="main-content">
+
+    <div class="writeup-section" id="overview">
+      <p class="section-label">Overview</p>
+      <div class="section-divider"></div>
+      <h2>Lab Overview</h2>
+      <p>
+        This two-part lab explored Man-in-the-Middle (MITM) attack techniques at the network layer. Lab 1 used ARP poisoning to position Kali Linux between an Ubuntu victim and its default gateway, intercepting unencrypted HTTP credentials in transit. Lab 2 escalated to active session manipulation — using a custom Python/Scapy script to hijack an established TCP telnet session and inject a command that created a directory on a remote server without the legitimate user's knowledge.
+      </p>
+
+      <div class="lab-split">
+        <div class="lab-card">
+          <div class="lab-card-header"><div class="lab-num">L1</div><p class="lab-card-title">ARP Poisoning — Credential Interception</p></div>
+          <ul>
+            <li>Mapped network hosts with Ettercap ARP scan</li>
+            <li>Poisoned ARP tables of gateway and Ubuntu victim</li>
+            <li>Intercepted HTTP login credentials in plaintext</li>
+            <li>Verified poisoning via duplicate MAC in ARP cache</li>
+          </ul>
+        </div>
+        <div class="lab-card">
+          <div class="lab-card-header"><div class="lab-num">L2</div><p class="lab-card-title">TCP Hijacking — Session Injection</p></div>
+          <ul>
+            <li>Set up 3-VM environment: client, server, attacker</li>
+            <li>Captured live telnet session parameters in Wireshark</li>
+            <li>Crafted forged TCP packet with Scapy Python script</li>
+            <li>Injected mkdir command; confirmed on server</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="objectives">
+      <p class="section-label">Objectives</p>
+      <div class="section-divider"></div>
+      <h2>Learning Objectives</h2>
+      <div class="phase-list">
+        <div class="phase-item">
+          <div class="phase-num">01</div>
+          <div class="phase-content">
+            <strong>Understand ARP and its inherent trust vulnerabilities</strong>
+            <span>Learn how ARP operates without authentication, making it susceptible to cache poisoning attacks that redirect network traffic through an attacker-controlled machine.</span>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">02</div>
+          <div class="phase-content">
+            <strong>Execute an ARP poisoning MITM attack with Ettercap</strong>
+            <span>Use Ettercap to perform host discovery, designate targets, poison ARP caches, and intercept live HTTP credentials passing through the forged network path.</span>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">03</div>
+          <div class="phase-content">
+            <strong>Understand TCP session state and hijacking vectors</strong>
+            <span>Learn how TCP sequence and acknowledgment numbers define session state, and how an attacker with visibility into a session can craft a forged packet that the server accepts as legitimate.</span>
+          </div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">04</div>
+          <div class="phase-content">
+            <strong>Craft and inject a forged TCP packet using Scapy</strong>
+            <span>Write a Python script using Scapy to construct a spoofed TCP packet with correct session parameters, inject an arbitrary command into an active telnet session, and confirm execution on the target server.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="methodology">
+      <p class="section-label">Methodology</p>
+      <div class="section-divider"></div>
+      <h2>Methodology</h2>
+
+      <h3>Lab 1 — ARP Poisoning with Ettercap</h3>
+      <p>
+        ARP (Address Resolution Protocol) maps IP addresses to MAC addresses on a local network. Because ARP has no authentication mechanism, any host can broadcast false ARP replies claiming to own any IP address — causing other hosts to update their ARP caches with incorrect MAC mappings.
+      </p>
+      <p>
+        Ettercap was used to scan the local subnet and identify active hosts. The default gateway (192.168.150.1) was set as Target 1 and the Ubuntu SEED victim (192.168.150.200) as Target 2. Ettercap then continuously sent forged ARP replies to both targets — telling the gateway that the victim's IP belonged to Kali's MAC, and telling the victim that the gateway's IP belonged to Kali's MAC.
+      </p>
+
+      <div class="flow-diagram">
+        <div class="flow-node"><div class="node-label">Ubuntu Victim</div><div class="node-ip">192.168.150.200</div></div>
+        <div class="flow-arrow">⟶<span>poisoned ARP</span></div>
+        <div class="flow-node attacker"><div class="node-label">Kali (MITM)</div><div class="node-ip">192.168.150.175</div></div>
+        <div class="flow-arrow">⟶<span>forwarded</span></div>
+        <div class="flow-node"><div class="node-label">Gateway</div><div class="node-ip">192.168.150.1</div></div>
+      </div>
+
+      <p>
+        With Kali positioned in the traffic path, the victim navigated to <code style="font-family:'DM Mono',monospace;color:var(--teal);font-size:13px;">testphp.vulnweb.com</code> and submitted login credentials over HTTP. Ettercap captured the plaintext username and password in real time. The poisoning was confirmed in Wireshark by observing duplicate MAC addresses — the same MAC address (Kali's) appearing for both the gateway and victim IPs in the ARP cache.
+      </p>
+
+      <div class="code-block">
+        <p class="code-block-label">ARP Cache — Poisoning Evidence</p>
+        <code><span class="comment"># Pre-poisoning: each IP maps to a unique MAC</span>
+192.168.150.1    →  aa:bb:cc:11:22:33  (gateway MAC)
+192.168.150.200  →  08:00:27:9d:be:11  (Ubuntu MAC)
+
+<span class="comment"># Post-poisoning: both IPs now map to Kali's MAC (08:00:27:25:b5:8f)</span>
+192.168.150.1    →  08:00:27:25:b5:8f  ← Kali's MAC
+192.168.150.200  →  08:00:27:25:b5:8f  ← Kali's MAC (duplicate!)</code>
+      </div>
+
+      <h3>Lab 2 — TCP Session Hijacking with Python/Scapy</h3>
+      <p>
+        TCP sessions are identified by a 4-tuple (source IP, source port, destination IP, destination port) and sequenced using sequence and acknowledgment numbers. If an attacker can observe these values on an active session, they can forge a packet that the server will accept as coming from the legitimate client.
+      </p>
+      <p>
+        A telnet session was established between Ubuntu_SEED_Client (192.168.150.200) and Ubuntu_SEED_Server (192.168.150.225). Wireshark on Kali captured the live session and revealed the exact TCP parameters needed for injection — source port, sequence number, acknowledgment number, and window size.
+      </p>
+
+      <div class="code-block">
+        <p class="code-block-label">Session Parameters Captured from Wireshark</p>
+        <code>Source IP:           192.168.150.200  (client)
+Destination IP:      192.168.150.225  (server)
+Source Port:         50070
+Destination Port:    23  (telnet)
+Next Sequence Num:   2707100219
+Acknowledgment Num:  1550081606
+Window Size:         245</code>
+      </div>
+
+      <p>
+        The command to inject (<code style="font-family:'DM Mono',monospace;color:var(--teal);font-size:13px;">mkdir Utah\n</code>) was converted to its hex representation, then fed into the custom <code style="font-family:'DM Mono',monospace;color:var(--teal);font-size:13px;">tcp_hijacking.py</code> Scapy script along with the captured session parameters.
+      </p>
+
+      <div class="code-block">
+        <p class="code-block-label">Command Encoding & Packet Injection</p>
+        <code><span class="comment"># Convert 'mkdir Utah\n' to hex for injection</span>
+echo "mkdir Utah\n" | xxd | tr -d " " | tr a-z A-Z | cut -d ":" -f2
+<span class="comment"># Result: 6D6B64697220557461680A0A</span>
+
+<span class="comment"># Run the Scapy injection script</span>
+sudo python tcp_hijacking.py
+<span class="comment"># Inputs: source/dest IP, ports, seq/ack nums, flags (URG/ACK/PSH), window, hex data</span></code>
+      </div>
+
+      <p>
+        The forged packet was accepted by the telnet server as a legitimate continuation of the existing session. Execution was confirmed on Ubuntu_SEED_Server — the <code style="font-family:'DM Mono',monospace;color:var(--teal);font-size:13px;">Utah</code> directory appeared in the seed user's home directory with a creation timestamp matching the injection, verified with <code style="font-family:'DM Mono',monospace;color:var(--teal);font-size:13px;">stat Utah</code>.
+      </p>
+    </div>
+
+    <div class="writeup-section" id="findings">
+      <p class="section-label">Findings</p>
+      <div class="section-divider"></div>
+      <h2>Key Findings</h2>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 1 — ARP Has No Authentication</p>
+        <p>ARP caches are updated by any gratuitous ARP reply, regardless of whether the host requested one. This fundamental design flaw allows any attacker on the same subnet to silently redirect all traffic through their machine. The poisoned ARP cache showed Kali's MAC address (<strong style="color:var(--text-primary)">08:00:27:25:b5:8f</strong>) mapped to both the gateway and victim IPs simultaneously.</p>
+      </div>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 2 — Plaintext Protocols Are Completely Exposed</p>
+        <p>HTTP credentials submitted by the victim to testphp.vulnweb.com were captured by Ettercap in complete plaintext — username and password visible without any decryption. This is why HTTPS (TLS) is non-negotiable for any site handling authentication, even in a MITM position where traffic is intercepted.</p>
+      </div>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 3 — TCP Sequence Numbers Are Predictable Once Observed</p>
+        <p>The TCP hijacking succeeded because Wireshark allowed exact sequence and acknowledgment numbers to be read from a live session. Telnet transmits all data — including these session identifiers — in plaintext. An attacker with network visibility can craft a packet the server accepts as legitimate, executing arbitrary commands without ever authenticating.</p>
+      </div>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 4 — Telnet Is Fundamentally Insecure</p>
+        <p>Telnet transmits all data unencrypted, including credentials and session state. The successful hijacking of a telnet session reinforces why telnet has been entirely superseded by <strong style="color:var(--text-primary)">SSH</strong> in modern environments. SSH encrypts all session data and uses cryptographic authentication, making both eavesdropping and session injection attacks infeasible.</p>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="takeaways">
+      <p class="section-label">Takeaways</p>
+      <div class="section-divider"></div>
+      <h2>Lessons & Takeaways</h2>
+      <p>
+        These labs demonstrated how network-layer attacks can completely undermine application-layer security when the underlying protocols lack authentication. ARP poisoning requires no exploit — just local network access. TCP hijacking requires only visibility into a plaintext session. Both attacks are trivially executable against legacy protocols.
+      </p>
+      <p>
+        Key defensive controls: enforce encrypted protocols (HTTPS, SSH, TLS) to eliminate the value of traffic interception; implement Dynamic ARP Inspection (DAI) on managed switches to validate ARP packets against a DHCP snooping binding table; segment networks to limit the blast radius of a compromised host; and monitor for ARP anomalies using IDS rules or tools like arpwatch.
+      </p>
+      <div class="screenshot-placeholder">
+        <p>[ Screenshots from lab submission available upon request ]</p>
+      </div>
+    </div>
+
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Contents</p>
+      <ul class="toc-list">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#objectives">Objectives</a></li>
+        <li><a href="#methodology">Methodology</a></li>
+        <li><a href="#findings">Findings</a></li>
+        <li><a href="#takeaways">Takeaways</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Tools Used</p>
+      <ul class="sidebar-list">
+        <li>Ettercap</li>
+        <li>Wireshark</li>
+        <li>Scapy (Python)</li>
+        <li>Kali Linux</li>
+        <li>Ubuntu SEED VM(s)</li>
+        <li>xxd (hex encoding)</li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Techniques</p>
+      <ul class="sidebar-list">
+        <li>ARP Cache Poisoning</li>
+        <li>Credential Interception (HTTP)</li>
+        <li>TCP Session Hijacking</li>
+        <li>Packet Crafting (Scapy)</li>
+        <li>Command Injection via TCP</li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">MITRE ATT&CK</p>
+      <ul class="sidebar-list">
+        <li>T1557.002 — ARP Cache Poisoning</li>
+        <li>T1040 — Network Sniffing</li>
+        <li>T1185 — Session Hijacking</li>
+        <li>T1550 — Use Alternate Auth</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<div class="project-footer">
+  <a href="index.html#projects" class="footer-back">← Back to Projects</a>
+  <p class="footer-copy">Spencer Warnick — IT 6300 Cybersecurity Portfolio</p>
+</div>
+</body>
+</html>
