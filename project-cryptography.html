@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cryptography with OpenSSL | Spencer Warnick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0a1628; --accent: #4a9edd; --teal: #2ec4b6; --indigo: #818cf8;
+    --text-primary: #e8edf5; --text-secondary: #8fa8c8; --text-muted: #5a7a9a;
+    --border: rgba(74,158,221,0.15); --border-hover: rgba(74,158,221,0.35);
+    --card-bg: rgba(17,34,64,0.6); --tag-bg: rgba(74,158,221,0.1); --tag-border: rgba(74,158,221,0.3);
+    --code-bg: rgba(0,0,0,0.35);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--text-primary); line-height: 1.7; font-size: 16px; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--navy); } ::-webkit-scrollbar-thumb { background: #2a5298; border-radius: 3px; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 3rem; height: 64px; background: rgba(10,22,40,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--accent); }
+  .project-hero { padding: 8rem 10% 4rem; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+  .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(74,158,221,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(74,158,221,0.04) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; }
+  .hero-glow { position: absolute; top: -20%; right: -5%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(129,140,248,0.08) 0%, transparent 65%); pointer-events: none; }
+  .breadcrumb { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em; margin-bottom: 1.5rem; position: relative; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; } .breadcrumb a:hover { text-decoration: underline; }
+  .project-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 600; line-height: 1.15; color: var(--text-primary); margin-bottom: 1.25rem; position: relative; max-width: 800px; }
+  .project-hero h1 .accent { color: var(--indigo); }
+  .project-meta { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem; position: relative; }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .meta-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 8px; position: relative; }
+  .tool-tag { font-family: 'DM Mono', monospace; font-size: 11px; padding: 4px 12px; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); border-radius: 3px; }
+  .tool-tag.indigo { border-color: rgba(129,140,248,0.3); background: rgba(129,140,248,0.08); color: var(--indigo); }
+  .tool-tag.teal { border-color: rgba(46,196,182,0.3); background: rgba(46,196,182,0.08); color: var(--teal); }
+  .content-wrapper { max-width: 1100px; margin: 0 auto; padding: 4rem 10%; display: grid; grid-template-columns: 1fr 300px; gap: 4rem; align-items: start; }
+  .main-content { min-width: 0; }
+  .sidebar { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 1.5rem; }
+  .sidebar-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; }
+  .sidebar-card-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+  .sidebar-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .sidebar-list li { font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .sidebar-list li::before { content: ''; display: inline-block; width: 4px; height: 4px; background: var(--teal); border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .toc-list a { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 0 4px 10px; display: block; border-left: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .toc-list a:hover { color: var(--accent); border-left-color: var(--accent); }
+  .writeup-section { margin-bottom: 3.5rem; }
+  .section-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .section-divider { width: 48px; height: 2px; background: linear-gradient(90deg, var(--indigo), var(--teal)); margin-bottom: 1.5rem; border-radius: 2px; }
+  .writeup-section h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .writeup-section h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 1.75rem 0 0.75rem; display: flex; align-items: center; gap: 10px; }
+  .writeup-section h3::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--indigo); border-radius: 1px; flex-shrink: 0; }
+  .writeup-section p { font-size: 15px; color: var(--text-secondary); line-height: 1.85; margin-bottom: 1rem; }
+  .lab-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0; }
+  .lab-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; transition: border-color 0.2s; }
+  .lab-card:hover { border-color: var(--border-hover); }
+  .lab-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .lab-num { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; background: rgba(129,140,248,0.12); border: 1px solid rgba(129,140,248,0.3); color: var(--indigo); flex-shrink: 0; }
+  .lab-card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .lab-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .lab-card ul li { font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .lab-card ul li::before { content: '→'; color: var(--indigo); font-size: 11px; margin-top: 2px; flex-shrink: 0; }
+  .phase-list { display: flex; flex-direction: column; gap: 1rem; margin: 1rem 0; }
+  .phase-item { display: grid; grid-template-columns: 36px 1fr; gap: 1rem; align-items: start; }
+  .phase-num { width: 36px; height: 36px; border-radius: 50%; background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.3); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--indigo); flex-shrink: 0; margin-top: 2px; }
+  .phase-content strong { display: block; font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .phase-content span { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .code-block { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--indigo); border-radius: 0 6px 6px 0; padding: 1rem 1.25rem; margin: 1rem 0; overflow-x: auto; }
+  .code-block-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .code-block code { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal); white-space: pre; display: block; line-height: 1.7; }
+  .code-block code .comment { color: var(--text-muted); font-style: italic; }
+  .finding-box { background: rgba(129,140,248,0.05); border: 1px solid rgba(129,140,248,0.2); border-radius: 6px; padding: 1.25rem; margin: 1.25rem 0; }
+  .finding-box-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--indigo); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .finding-box p { font-size: 14px; color: var(--text-secondary); margin: 0; }
+  .comparison-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 13px; }
+  .comparison-table th { background: rgba(74,158,221,0.1); color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+  .comparison-table td { padding: 9px 14px; border: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+  .comparison-table td:first-child { font-family: 'DM Mono', monospace; color: var(--indigo); font-size: 12px; }
+  .comparison-table tr:hover td { background: rgba(74,158,221,0.04); }
+  .screenshot-placeholder { background: var(--card-bg); border: 1px dashed var(--border-hover); border-radius: 6px; padding: 2.5rem; text-align: center; margin: 1.25rem 0; }
+  .screenshot-placeholder p { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.05em; margin: 0; }
+  .project-footer { border-top: 1px solid var(--border); padding: 3rem 10%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .footer-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+  .footer-back:hover { color: var(--accent); }
+  .footer-copy { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
+  @media (max-width: 900px) { .content-wrapper { grid-template-columns: 1fr; } .sidebar { position: static; } .lab-split { grid-template-columns: 1fr; } nav { padding: 0 1.5rem; } .project-hero { padding: 7rem 6% 3rem; } .content-wrapper { padding: 3rem 6%; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">SW // sec</a>
+  <a href="index.html#projects" class="nav-back">← Back to Portfolio</a>
+</nav>
+<div class="project-hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <p class="breadcrumb"><a href="index.html">Portfolio</a> &nbsp;/&nbsp; <a href="index.html#projects">Projects</a> &nbsp;/&nbsp; IT 6300</p>
+  <h1>Cryptography<br />with <span class="accent">OpenSSL</span></h1>
+  <div class="project-meta">
+    <div class="meta-item"><span class="meta-label">Course</span><span class="meta-value">IT 6300</span></div>
+    <div class="meta-item"><span class="meta-label">Level</span><span class="meta-value">Graduate Coursework</span></div>
+    <div class="meta-item"><span class="meta-label">Labs</span><span class="meta-value">2 — AES Symmetric & RSA Asymmetric</span></div>
+    <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Cryptography</span></div>
+  </div>
+  <div class="tool-tags">
+    <span class="tool-tag">OpenSSL</span>
+    <span class="tool-tag">Linux CLI</span>
+    <span class="tool-tag">md5sum</span>
+    <span class="tool-tag indigo">AES-128-ECB</span>
+    <span class="tool-tag indigo">RSA-512</span>
+    <span class="tool-tag teal">Symmetric Encryption</span>
+    <span class="tool-tag teal">Asymmetric Encryption</span>
+    <span class="tool-tag teal">Public Key Infrastructure</span>
+  </div>
+</div>
+<div class="content-wrapper">
+  <main class="main-content">
+
+    <div class="writeup-section" id="overview">
+      <p class="section-label">Overview</p>
+      <div class="section-divider"></div>
+      <h2>Lab Overview</h2>
+      <p>This two-part lab provided hands-on experience with the two foundational pillars of modern cryptography — symmetric and asymmetric encryption — using OpenSSL on the Linux command line. Lab 1 used AES-128 in ECB mode to encrypt and decrypt a plaintext file, verifying data integrity with MD5 hashing before and after decryption. Lab 2 used RSA to generate a public/private key pair, explore the mathematical structure of the keys, and perform asymmetric encryption and decryption of a message.</p>
+      <div class="lab-split">
+        <div class="lab-card">
+          <div class="lab-card-header"><div class="lab-num">L1</div><p class="lab-card-title">AES-128 Symmetric Encryption</p></div>
+          <ul>
+            <li>Created plaintext file and computed MD5 hash</li>
+            <li>Encrypted with AES-128-ECB using 128-bit hex key</li>
+            <li>Decrypted ciphertext back to plaintext</li>
+            <li>Verified integrity via matching MD5 hashes</li>
+          </ul>
+        </div>
+        <div class="lab-card">
+          <div class="lab-card-header"><div class="lab-num">L2</div><p class="lab-card-title">RSA Asymmetric Encryption</p></div>
+          <ul>
+            <li>Generated 512-bit RSA public/private key pair</li>
+            <li>Inspected key structure (primes P1, P2, modulus N)</li>
+            <li>Exported public key in PEM format</li>
+            <li>Encrypted with public key; decrypted with private key</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="objectives">
+      <p class="section-label">Objectives</p>
+      <div class="section-divider"></div>
+      <h2>Learning Objectives</h2>
+      <div class="phase-list">
+        <div class="phase-item">
+          <div class="phase-num">01</div>
+          <div class="phase-content"><strong>Understand symmetric vs. asymmetric encryption</strong><span>Contrast the single shared-key model of AES with the public/private key pair model of RSA, and understand the use cases and trade-offs of each approach.</span></div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">02</div>
+          <div class="phase-content"><strong>Perform AES encryption and verify integrity with hashing</strong><span>Encrypt and decrypt files using AES-128-ECB via OpenSSL, and use MD5 hashing to confirm the decrypted output is bit-for-bit identical to the original plaintext.</span></div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">03</div>
+          <div class="phase-content"><strong>Generate and inspect RSA key pairs</strong><span>Use openssl genrsa to produce a 512-bit key pair, then inspect the underlying mathematical components — prime factors P1 and P2, modulus N — using ASN.1 parsing.</span></div>
+        </div>
+        <div class="phase-item">
+          <div class="phase-num">04</div>
+          <div class="phase-content"><strong>Perform asymmetric encryption and decryption</strong><span>Export the public key in PEM format, encrypt a message with it, and decrypt the resulting ciphertext using the corresponding private key — demonstrating the one-way trust model of PKI.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="methodology">
+      <p class="section-label">Methodology</p>
+      <div class="section-divider"></div>
+      <h2>Methodology</h2>
+
+      <h3>Lab 1 — AES-128 Symmetric Encryption</h3>
+      <p>A plaintext file containing a secret message was created, and its MD5 hash was computed as a baseline integrity check. OpenSSL's AES-128-ECB cipher was used with a 128-bit hexadecimal key (32 hex characters × 4 bits = 128 bits) to produce a binary ciphertext file. The ciphertext was visually confirmed to be unreadable, then decrypted — and the MD5 hash of the decrypted file was compared to the original to verify no data corruption occurred.</p>
+
+      <div class="code-block">
+        <p class="code-block-label">AES-128 Encrypt, Decrypt & Integrity Check</p>
+        <code><span class="comment"># Compute MD5 hash of plaintext (baseline)</span>
+cat plain.txt | tr -d "\n" | md5sum
+
+<span class="comment"># Encrypt with AES-128-ECB (128-bit hex key)</span>
+sudo openssl enc -aes-128-ecb \
+  -in plain.txt -out aes128ecb.bin \
+  -K 11111111111111111111111111111111
+
+<span class="comment"># Decrypt the ciphertext</span>
+sudo openssl enc -d -aes-128-ecb \
+  -in aes128ecb.bin -out plain-aes128ecb.txt \
+  -K 11111111111111111111111111111111
+
+<span class="comment"># Verify integrity — hashes must match</span>
+cat plain-aes128ecb.txt | tr -d "\n" | md5sum</code>
+      </div>
+
+      <h3>Lab 2 — RSA Key Generation & Asymmetric Encryption</h3>
+      <p>A 512-bit RSA key pair was generated using <code style="font-family:'DM Mono',monospace;color:var(--teal);font-size:13px;">openssl genrsa</code>. The internal structure was inspected with both <code style="font-family:'DM Mono',monospace;color:var(--teal);font-size:13px;">-text</code> and <code style="font-family:'DM Mono',monospace;color:var(--teal);font-size:13px;">asn1parse</code> flags, revealing the two large prime factors (P1 and P2) and the public modulus N. These values were manually verified using big-number calculators to confirm N = P1 × P2.</p>
+
+      <div class="code-block">
+        <p class="code-block-label">RSA Key Generation, Inspection & Encryption</p>
+        <code><span class="comment"># Generate 512-bit RSA key pair</span>
+openssl genrsa -out public-private.key 512
+
+<span class="comment"># Inspect key structure (modulus, primes, exponents)</span>
+openssl rsa -text -in public-private.key
+openssl asn1parse -in public-private.key
+
+<span class="comment"># Export public key in PEM format</span>
+openssl rsa -pubout -in public-private.key -out public.pem
+
+<span class="comment"># Encrypt message with public key</span>
+openssl rsautl -encrypt -inkey public.pem -pubin \
+  -in plain-secret-msg.txt -out encrypted-secret-msg.bin
+
+<span class="comment"># Decrypt with private key</span>
+openssl rsautl -decrypt -inkey public-private.key \
+  -in encrypted-secret-msg.bin -out decrypted-secret-msg.txt</code>
+      </div>
+
+      <p>The RSA key mathematical verification confirmed the relationship between the prime factors and the public modulus:</p>
+
+      <div class="code-block">
+        <p class="code-block-label">RSA Mathematical Verification</p>
+        <code>P1 = 333153497917285648831331609848896587219
+P2 = 304156724905367675129750643750572765663
+
+N  = P1 × P2
+N  = 101330876817288833791469382025098603818830989823332181068531232814846927861197
+
+<span class="comment"># N is the public modulus — factoring N back into P1 and P2
+# is computationally infeasible at real-world key sizes (2048+ bits)</span></code>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="findings">
+      <p class="section-label">Findings</p>
+      <div class="section-divider"></div>
+      <h2>Key Findings</h2>
+
+      <table class="comparison-table">
+        <thead><tr><th>Property</th><th>AES-128 (Symmetric)</th><th>RSA-512 (Asymmetric)</th></tr></thead>
+        <tbody>
+          <tr><td>Keys</td><td>One shared secret key</td><td>Public + private key pair</td></tr>
+          <tr><td>Speed</td><td>Very fast — suitable for bulk data</td><td>Slow — used for small payloads / key exchange</td></tr>
+          <tr><td>Key distribution</td><td>Hard — key must be shared securely</td><td>Easy — public key can be shared openly</td></tr>
+          <tr><td>Security basis</td><td>Substitution-permutation network</td><td>Integer factorization hardness</td></tr>
+          <tr><td>Typical use</td><td>File encryption, disk encryption, TLS bulk data</td><td>Digital signatures, TLS handshake, key wrapping</td></tr>
+        </tbody>
+      </table>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 1 — MD5 Hash Confirms Lossless Round-Trip</p>
+        <p>The MD5 hash of the decrypted AES output was identical to the original plaintext hash, confirming that AES encryption and decryption is perfectly lossless when the correct key is used. A single bit difference in the key would produce a completely different ciphertext and an unrecoverable plaintext.</p>
+      </div>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 2 — RSA Security Rests on Prime Factorization</p>
+        <p>Inspecting the key with ASN.1 parsing revealed the two prime factors P1 and P2 whose product forms the public modulus N. The security of RSA relies entirely on the fact that factoring N back into P1 and P2 is computationally infeasible at real-world key sizes. The 512-bit key used in this lab is considered insecure by modern standards — <strong style="color:var(--text-primary)">2048 bits minimum</strong> is the current recommendation.</p>
+      </div>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 3 — ECB Mode Has Known Weaknesses</p>
+        <p>AES-128-ECB (Electronic Code Book) encrypts each block independently, meaning identical plaintext blocks produce identical ciphertext blocks. This leaks structural patterns in the data. Modern best practice uses <strong style="color:var(--text-primary)">AES-GCM or AES-CBC with a random IV</strong> to prevent pattern analysis — ECB mode is considered cryptographically weak for real-world use.</p>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="takeaways">
+      <p class="section-label">Takeaways</p>
+      <div class="section-divider"></div>
+      <h2>Lessons & Takeaways</h2>
+      <p>These labs built hands-on intuition for the cryptographic primitives that underpin virtually all secure communications — TLS, SSH, PGP, disk encryption, and digital signatures all rely on AES and RSA (or their modern equivalents). Understanding how keys are structured, how encryption modes differ, and how integrity verification works is foundational for any security role.</p>
+      <p>Key takeaways for real-world application: use AES-256-GCM instead of AES-128-ECB for authenticated encryption with stronger key size and mode; use RSA-2048 or higher, or prefer elliptic curve cryptography (ECC) for equivalent security with shorter keys; always verify data integrity with a cryptographic hash after decryption; and never share private keys or reuse symmetric keys across sessions.</p>
+      <div class="screenshot-placeholder"><p>[ Screenshots from lab submission available upon request ]</p></div>
+    </div>
+
+  </main>
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Contents</p>
+      <ul class="toc-list">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#objectives">Objectives</a></li>
+        <li><a href="#methodology">Methodology</a></li>
+        <li><a href="#findings">Findings</a></li>
+        <li><a href="#takeaways">Takeaways</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Tools Used</p>
+      <ul class="sidebar-list">
+        <li>OpenSSL (enc, genrsa, rsautl)</li>
+        <li>md5sum (integrity check)</li>
+        <li>ASN.1 Parser</li>
+        <li>Linux CLI (Kali / Ubuntu)</li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Concepts Covered</p>
+      <ul class="sidebar-list">
+        <li>Symmetric key encryption (AES)</li>
+        <li>Asymmetric key encryption (RSA)</li>
+        <li>ECB vs. CBC/GCM modes</li>
+        <li>Key pair generation</li>
+        <li>PEM format / key export</li>
+        <li>Hash-based integrity verification</li>
+        <li>Prime factorization & modulus N</li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Key Sizes</p>
+      <ul class="sidebar-list">
+        <li>AES-128 (lab) → AES-256 (production)</li>
+        <li>RSA-512 (lab) → RSA-2048+ (production)</li>
+        <li>ECB mode (lab) → GCM mode (production)</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+<div class="project-footer">
+  <a href="index.html#projects" class="footer-back">← Back to Projects</a>
+  <p class="footer-copy">Spencer Warnick — IT 6300 Cybersecurity Portfolio</p>
+</div>
+</body>
+</html>
