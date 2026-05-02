@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ethics & Policy in Cybersecurity | Spencer Warnick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0a1628; --navy-mid: #112240;
+    --accent: #4a9edd; --teal: #2ec4b6; --rose: #fb7185;
+    --text-primary: #e8edf5; --text-secondary: #8fa8c8; --text-muted: #5a7a9a;
+    --border: rgba(74,158,221,0.15); --border-hover: rgba(74,158,221,0.35);
+    --card-bg: rgba(17,34,64,0.6); --tag-bg: rgba(74,158,221,0.1); --tag-border: rgba(74,158,221,0.3);
+    --code-bg: rgba(0,0,0,0.35);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--text-primary); line-height: 1.7; font-size: 16px; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--navy); } ::-webkit-scrollbar-thumb { background: #2a5298; border-radius: 3px; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 3rem; height: 64px; background: rgba(10,22,40,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--accent); }
+
+  .project-hero { padding: 8rem 10% 4rem; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+  .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(74,158,221,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(74,158,221,0.04) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; }
+  .hero-glow { position: absolute; top: -20%; right: -5%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(251,113,133,0.07) 0%, transparent 65%); pointer-events: none; }
+
+  .breadcrumb { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em; margin-bottom: 1.5rem; position: relative; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; } .breadcrumb a:hover { text-decoration: underline; }
+  .project-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 600; line-height: 1.15; color: var(--text-primary); margin-bottom: 1.25rem; position: relative; max-width: 800px; }
+  .project-hero h1 .accent { color: var(--rose); }
+
+  .project-meta { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem; position: relative; }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .meta-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 8px; position: relative; }
+  .tool-tag { font-family: 'DM Mono', monospace; font-size: 11px; padding: 4px 12px; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); border-radius: 3px; }
+  .tool-tag.rose { border-color: rgba(251,113,133,0.3); background: rgba(251,113,133,0.08); color: var(--rose); }
+  .tool-tag.teal { border-color: rgba(46,196,182,0.3); background: rgba(46,196,182,0.08); color: var(--teal); }
+
+  .content-wrapper { max-width: 1100px; margin: 0 auto; padding: 4rem 10%; display: grid; grid-template-columns: 1fr 300px; gap: 4rem; align-items: start; }
+  .main-content { min-width: 0; }
+
+  .sidebar { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 1.5rem; }
+  .sidebar-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; }
+  .sidebar-card-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+  .sidebar-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .sidebar-list li { font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .sidebar-list li::before { content: ''; display: inline-block; width: 4px; height: 4px; background: var(--teal); border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .toc-list a { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 0 4px 10px; display: block; border-left: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .toc-list a:hover { color: var(--accent); border-left-color: var(--accent); }
+
+  .writeup-section { margin-bottom: 3.5rem; }
+  .section-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .section-divider { width: 48px; height: 2px; background: linear-gradient(90deg, var(--rose), var(--teal)); margin-bottom: 1.5rem; border-radius: 2px; }
+  .writeup-section h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .writeup-section h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 1.75rem 0 0.75rem; display: flex; align-items: center; gap: 10px; }
+  .writeup-section h3::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--rose); border-radius: 1px; flex-shrink: 0; }
+  .writeup-section p { font-size: 15px; color: var(--text-secondary); line-height: 1.85; margin-bottom: 1rem; }
+
+  /* ASSIGNMENT CARDS */
+  .assignment-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--rose);
+    border-radius: 0 6px 6px 0;
+    padding: 1.75rem;
+    margin-bottom: 1.75rem;
+    transition: border-color 0.2s;
+  }
+  .assignment-card:hover { border-color: var(--border-hover); border-left-color: var(--rose); }
+  .assignment-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .assignment-type { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--rose); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .assignment-title { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.35; }
+  .assignment-badge { font-family: 'DM Mono', monospace; font-size: 11px; padding: 4px 12px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; }
+  .badge-case { background: rgba(74,158,221,0.1); border: 1px solid rgba(74,158,221,0.3); color: var(--accent); }
+  .badge-analysis { background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.3); color: var(--teal); }
+  .badge-proposal { background: rgba(251,113,133,0.1); border: 1px solid rgba(251,113,133,0.3); color: var(--rose); }
+  .badge-ethics { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; }
+  .assignment-body { font-size: 14px; color: var(--text-secondary); line-height: 1.85; }
+  .assignment-body p { margin-bottom: 0.75rem; }
+  .assignment-body p:last-child { margin-bottom: 0; }
+  .assignment-key-points { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+  .key-point { font-family: 'DM Mono', monospace; font-size: 11px; padding: 3px 10px; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); border-radius: 3px; }
+
+  /* FIRAC STRUCTURE */
+  .firac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .firac-item { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
+  .firac-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--rose); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .firac-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  .screenshot-placeholder { background: var(--card-bg); border: 1px dashed var(--border-hover); border-radius: 6px; padding: 2rem; text-align: center; margin: 1.25rem 0; }
+  .screenshot-placeholder p { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.05em; margin: 0; }
+
+  .project-footer { border-top: 1px solid var(--border); padding: 3rem 10%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .footer-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+  .footer-back:hover { color: var(--accent); }
+  .footer-copy { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
+
+  @media (max-width: 900px) {
+    .content-wrapper { grid-template-columns: 1fr; } .sidebar { position: static; }
+    .firac-grid { grid-template-columns: 1fr; }
+    nav { padding: 0 1.5rem; } .project-hero { padding: 7rem 6% 3rem; } .content-wrapper { padding: 3rem 6%; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">SW // sec</a>
+  <a href="index.html#projects" class="nav-back">← Back to Portfolio</a>
+</nav>
+
+<div class="project-hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <p class="breadcrumb"><a href="index.html">Portfolio</a> &nbsp;/&nbsp; <a href="index.html#projects">Projects</a></p>
+  <h1>Ethics & <span class="accent">Policy</span><br />in Cybersecurity</h1>
+  <div class="project-meta">
+    <div class="meta-item"><span class="meta-label">Level</span><span class="meta-value">Graduate Coursework</span></div>
+    <div class="meta-item"><span class="meta-label">Assignments</span><span class="meta-value">5 — Law, Ethics, Policy & Social Impact</span></div>
+    <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Ethics & Policy</span></div>
+  </div>
+  <div class="tool-tags">
+    <span class="tool-tag rose">Cyberlaw</span>
+    <span class="tool-tag rose">FIRAC Analysis</span>
+    <span class="tool-tag rose">Ethical Hacking</span>
+    <span class="tool-tag rose">Cyberwarfare Ethics</span>
+    <span class="tool-tag teal">Contract Law</span>
+    <span class="tool-tag teal">Copyright / Fair Use</span>
+    <span class="tool-tag teal">Social Entrepreneurship</span>
+    <span class="tool-tag">Graduate Writing</span>
+  </div>
+</div>
+
+<div class="content-wrapper">
+  <main class="main-content">
+
+    <div class="writeup-section" id="overview">
+      <p class="section-label">Overview</p>
+      <div class="section-divider"></div>
+      <h2>Course Overview</h2>
+      <p>
+        Cybersecurity does not exist in a vacuum — it intersects with law, ethics, policy, and social impact in ways that shape how practitioners operate at every level. This graduate course examined the legal and ethical dimensions of cybersecurity through case law analysis, policy writing, ethical frameworks, and applied social entrepreneurship. The assignments below represent a cross-section of that work, demonstrating the ability to analyze legal precedent, reason through ethical dilemmas, and think strategically about cybersecurity's role in society.
+      </p>
+    </div>
+
+    <div class="writeup-section" id="assignments">
+      <p class="section-label">Assignments</p>
+      <div class="section-divider"></div>
+      <h2>Work Samples</h2>
+
+      <!-- ASSIGNMENT 1: SOCIAL VENTURE PROPOSAL -->
+      <div class="assignment-card" id="venture">
+        <div class="assignment-header">
+          <div>
+            <p class="assignment-type">Social Entrepreneurship</p>
+            <p class="assignment-title">Building Digital Resilience: Community Cybersecurity Awareness for All</p>
+          </div>
+          <span class="assignment-badge badge-proposal">Proposal</span>
+        </div>
+        <div class="assignment-body">
+          <p>Developed a full grant proposal for a community cybersecurity awareness program in response to a hypothetical $35,000 seed grant from the Green Wolverine Enterprise Group. The proposal identified a gap in accessible, community-level cybersecurity education — a market dominated by costly enterprise-focused training products — and designed a grassroots solution to address it.</p>
+          <p>The program, offered in a "pay what you can" tiered pricing model, would deliver beginner, intermediate, and advanced cybersecurity training to individuals, families, and small businesses through in-person and virtual formats. The proposal included a phased implementation timeline across three stages — planning, pilot, and full launch — a fully itemized $35,000 budget, a stakeholder communication plan, and a risk register with mitigation strategies.</p>
+          <div class="assignment-key-points">
+            <span class="key-point">Community Education</span>
+            <span class="key-point">Grant Proposal</span>
+            <span class="key-point">Project Management</span>
+            <span class="key-point">Risk Planning</span>
+            <span class="key-point">Stakeholder Communication</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSIGNMENT 2: FIRAC PROCD V ZEIDENBERG -->
+      <div class="assignment-card" id="procd">
+        <div class="assignment-header">
+          <div>
+            <p class="assignment-type">Case Law — Contract Law</p>
+            <p class="assignment-title">FIRAC Brief: ProCD, Inc. v. Zeidenberg (7th Cir. 1996)</p>
+          </div>
+          <span class="assignment-badge badge-case">FIRAC Brief</span>
+        </div>
+        <div class="assignment-body">
+          <p>One of the foundational cases in cyberspace contract law, ProCD v. Zeidenberg established that shrinkwrap licenses — terms revealed only after purchase — are legally enforceable contracts under the UCC. Matthew Zeidenberg purchased consumer copies of ProCD's SelectPhone software and resold the database commercially, in violation of the license terms. The district court ruled the license unenforceable; the Seventh Circuit reversed.</p>
+          <div class="firac-grid">
+            <div class="firac-item">
+              <p class="firac-label">Issue</p>
+              <p class="firac-text">Is a shrinkwrap license a valid and enforceable contract when full terms are only disclosed after purchase?</p>
+            </div>
+            <div class="firac-item">
+              <p class="firac-label">Rule</p>
+              <p class="firac-text">Contract law governs the relationship between the parties; copyright law does not supersede contract law. A buyer who continues use after reviewing terms has accepted them.</p>
+            </div>
+            <div class="firac-item">
+              <p class="firac-label">Analysis</p>
+              <p class="firac-text">Zeidenberg had the opportunity to review and reject the terms by returning the software. His continued use constituted acceptance. Commercial use violated the personal-use license.</p>
+            </div>
+            <div class="firac-item">
+              <p class="firac-label">Conclusion</p>
+              <p class="firac-text">Shrinkwrap licenses are enforceable. ProCD was entitled to enforce the license. The circuit court reversed the district court and ruled in ProCD's favor.</p>
+            </div>
+          </div>
+          <div class="assignment-key-points">
+            <span class="key-point">Shrinkwrap License</span>
+            <span class="key-point">UCC Contract Law</span>
+            <span class="key-point">Cyberspace Commerce</span>
+            <span class="key-point">7th Circuit 1996</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSIGNMENT 3: ETHICAL HACKING -->
+      <div class="assignment-card" id="ethicalhacking">
+        <div class="assignment-header">
+          <div>
+            <p class="assignment-type">Ethics Analysis</p>
+            <p class="assignment-title">Ethical Hacking: Definitions, Hacker Types & Organizational Benefits</p>
+          </div>
+          <span class="assignment-badge badge-analysis">Analysis</span>
+        </div>
+        <div class="assignment-body">
+          <p>This graduate-level analysis defined ethical hacking as the authorized use of offensive security techniques to identify and remediate vulnerabilities — distinguishing it from malicious activity solely by authorization and intent. The paper examined six hacker archetypes through the "hat color" framework and connected ethical hacking benefits to real-world organizational security practice.</p>
+          <p>A key argument was that the word "hacker" is not monolithic — motivations define the ethics. Black hat hackers exploit systems for personal gain or disruption; white hats are authorized professionals who strengthen security posture; gray hats operate without permission but usually cause no harm; red hats aggressively pursue black hats outside legal channels; blue hats are pre-release security testers; green hats are newcomers who may cause unintentional harm through inexperience.</p>
+          <p>The analysis concluded by connecting ethical hacking to two organizational benefits: proactive vulnerability identification before adversarial exploitation, and systemic improvement of both technical and human security practices.</p>
+          <div class="assignment-key-points">
+            <span class="key-point">Black / White / Gray Hat</span>
+            <span class="key-point">Red / Blue / Green Hat</span>
+            <span class="key-point">Penetration Testing Ethics</span>
+            <span class="key-point">Vulnerability Management</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSIGNMENT 4: FIRAC GOOGLE V ORACLE -->
+      <div class="assignment-card" id="google">
+        <div class="assignment-header">
+          <div>
+            <p class="assignment-type">Case Law — Copyright / Fair Use</p>
+            <p class="assignment-title">FIRAC Brief: Google LLC v. Oracle America, Inc. (U.S. Supreme Court 2021)</p>
+          </div>
+          <span class="assignment-badge badge-case">FIRAC Brief</span>
+        </div>
+        <div class="assignment-body">
+          <p>Google v. Oracle is one of the most significant copyright cases in software history. Google copied 11,500 lines of Oracle's Java SE API to build Android, arguing the copying was necessary to attract Java developers to a new platform. Oracle sued for copyright infringement. The Supreme Court ruled 6-2 in Google's favor, finding the use constituted fair use under 17 U.S.C. § 107.</p>
+          <div class="firac-grid">
+            <div class="firac-item">
+              <p class="firac-label">Issue</p>
+              <p class="firac-text">Does Google's copying of Oracle's Java SE API for Android constitute fair use under 17 U.S.C. § 107?</p>
+            </div>
+            <div class="firac-item">
+              <p class="firac-label">Rule</p>
+              <p class="firac-text">Fair use evaluates four factors: purpose/character of use, nature of the work, amount used, and market effect. All four must be weighed holistically.</p>
+            </div>
+            <div class="firac-item">
+              <p class="firac-label">Analysis</p>
+              <p class="firac-text">Google's use was transformative (new platform); the API is functional (limits protection); only 0.4% of the codebase was copied; Android does not substitute for Java SE in the market.</p>
+            </div>
+            <div class="firac-item">
+              <p class="firac-label">Conclusion</p>
+              <p class="firac-text">All four fair use factors favored Google. The Court ruled Google's limited, transformative copying of the Java SE API constituted fair use. Ruled in favor of Google.</p>
+            </div>
+          </div>
+          <div class="assignment-key-points">
+            <span class="key-point">Copyright Law</span>
+            <span class="key-point">Fair Use Doctrine</span>
+            <span class="key-point">Software APIs</span>
+            <span class="key-point">Supreme Court 2021</span>
+            <span class="key-point">Moot Court</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSIGNMENT 5: CYBERWARFARE ETHICS -->
+      <div class="assignment-card" id="cyberwarfare">
+        <div class="assignment-header">
+          <div>
+            <p class="assignment-type">Ethics & Policy Analysis</p>
+            <p class="assignment-title">The Ethics of State-Sponsored Cyber Operations</p>
+          </div>
+          <span class="assignment-badge badge-ethics">Policy Paper</span>
+        </div>
+        <div class="assignment-body">
+          <p>This policy paper examined the ethical dimensions of state-sponsored cyber operations — analyzing motivations, the offensive/defensive distinction, and the fairness of cyberwarfare as an instrument of national power. The central argument was that the ethics of a cyber operation depend heavily on its purpose, scope, and proportionality rather than the act of hacking itself.</p>
+          <p>Defensive cyber operations — protecting critical infrastructure, monitoring foreign threats, and neutralizing incoming attacks — were characterized as generally ethically justified, operating within a nation's legitimate security mandate. Offensive operations occupy more contested ethical ground, particularly when they affect civilian infrastructure, escalate diplomatic tensions, or produce collateral damage beyond the intended target (e.g., the NotPetya attack's global spread).</p>
+          <p>The paper concluded that cyberwarfare lacks the international norms, rules of engagement, and accountability mechanisms that govern kinetic warfare — making diplomacy, cooperative frameworks, and restraint in offensive operations essential to preventing escalation. Offensive operations should be reserved for when they are genuinely necessary and proportionate.</p>
+          <div class="assignment-key-points">
+            <span class="key-point">Cyberwarfare</span>
+            <span class="key-point">Offensive vs. Defensive Ops</span>
+            <span class="key-point">Critical Infrastructure</span>
+            <span class="key-point">International Norms</span>
+            <span class="key-point">NotPetya</span>
+            <span class="key-point">National Security Ethics</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="writeup-section" id="takeaways">
+      <p class="section-label">Takeaways</p>
+      <div class="section-divider"></div>
+      <h2>Broader Perspective</h2>
+      <p>
+        Across these assignments, a consistent theme emerges: cybersecurity decisions are rarely purely technical. Whether analyzing a shrinkwrap license, a fair use defense, the ethics of offensive hacking, or the design of a community education program — context, intent, and consequence shape what is legal, ethical, and effective.
+      </p>
+      <p>
+        This course reinforced that strong cybersecurity practitioners need more than technical skill. They need the ability to reason through ambiguity, communicate clearly across legal and policy domains, and understand the broader societal impact of the work they do. These capabilities translate directly into GRC roles, security leadership, policy advisory positions, and any environment where security intersects with law, compliance, or organizational strategy.
+      </p>
+    </div>
+
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Contents</p>
+      <ul class="toc-list">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#venture">Social Venture Proposal</a></li>
+        <li><a href="#procd">ProCD v. Zeidenberg</a></li>
+        <li><a href="#ethicalhacking">Ethical Hacking</a></li>
+        <li><a href="#google">Google v. Oracle</a></li>
+        <li><a href="#cyberwarfare">Cyberwarfare Ethics</a></li>
+        <li><a href="#takeaways">Takeaways</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Assignment Types</p>
+      <ul class="sidebar-list">
+        <li>2 × FIRAC Case Briefs</li>
+        <li>1 × Grant Proposal</li>
+        <li>1 × Ethics Analysis</li>
+        <li>1 × Policy Paper</li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Legal Areas</p>
+      <ul class="sidebar-list">
+        <li>Cyberspace Contract Law</li>
+        <li>Software Copyright</li>
+        <li>Fair Use Doctrine</li>
+        <li>Shrinkwrap Licenses</li>
+        <li>International Cyber Law</li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Key Cases</p>
+      <ul class="sidebar-list">
+        <li>ProCD v. Zeidenberg (7th Cir. 1996)</li>
+        <li>Google LLC v. Oracle America (SCOTUS 2021)</li>
+        <li>Feist Publications v. Rural Telephone (1991)</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<div class="project-footer">
+  <a href="index.html#projects" class="footer-back">← Back to Projects</a>
+  <p class="footer-copy">Spencer Warnick — Cybersecurity Portfolio</p>
+</div>
+</body>
+</html>
