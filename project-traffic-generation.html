@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Network Traffic Generation & Capture | Spencer Warnick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0a1628; --navy-mid: #112240;
+    --accent: #4a9edd; --teal: #2ec4b6; --lime: #84cc16;
+    --text-primary: #e8edf5; --text-secondary: #8fa8c8; --text-muted: #5a7a9a;
+    --border: rgba(74,158,221,0.15); --border-hover: rgba(74,158,221,0.35);
+    --card-bg: rgba(17,34,64,0.6); --tag-bg: rgba(74,158,221,0.1); --tag-border: rgba(74,158,221,0.3);
+    --code-bg: rgba(0,0,0,0.35);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--text-primary); line-height: 1.7; font-size: 16px; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--navy); } ::-webkit-scrollbar-thumb { background: #2a5298; border-radius: 3px; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 3rem; height: 64px; background: rgba(10,22,40,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+  .nav-back { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--accent); }
+  .project-hero { padding: 8rem 10% 4rem; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+  .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(74,158,221,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(74,158,221,0.04) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; }
+  .hero-glow { position: absolute; top: -20%; right: -5%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(132,204,22,0.07) 0%, transparent 65%); pointer-events: none; }
+  .breadcrumb { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em; margin-bottom: 1.5rem; position: relative; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; } .breadcrumb a:hover { text-decoration: underline; }
+  .project-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 600; line-height: 1.15; color: var(--text-primary); margin-bottom: 1.25rem; position: relative; max-width: 800px; }
+  .project-hero h1 .accent { color: var(--lime); }
+  .project-meta { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem; position: relative; }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .meta-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 8px; position: relative; }
+  .tool-tag { font-family: 'DM Mono', monospace; font-size: 11px; padding: 4px 12px; border: 1px solid var(--tag-border); background: var(--tag-bg); color: var(--accent); border-radius: 3px; }
+  .tool-tag.lime { border-color: rgba(132,204,22,0.3); background: rgba(132,204,22,0.08); color: var(--lime); }
+  .tool-tag.teal { border-color: rgba(46,196,182,0.3); background: rgba(46,196,182,0.08); color: var(--teal); }
+  .content-wrapper { max-width: 1100px; margin: 0 auto; padding: 4rem 10%; display: grid; grid-template-columns: 1fr 300px; gap: 4rem; align-items: start; }
+  .main-content { min-width: 0; }
+  .sidebar { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 1.5rem; }
+  .sidebar-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; }
+  .sidebar-card-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+  .sidebar-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .sidebar-list li { font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .sidebar-list li::before { content: ''; display: inline-block; width: 4px; height: 4px; background: var(--teal); border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .toc-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .toc-list a { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 0 4px 10px; display: block; border-left: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .toc-list a:hover { color: var(--accent); border-left-color: var(--accent); }
+  .writeup-section { margin-bottom: 3.5rem; }
+  .section-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .section-divider { width: 48px; height: 2px; background: linear-gradient(90deg, var(--lime), var(--teal)); margin-bottom: 1.5rem; border-radius: 2px; }
+  .writeup-section h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .writeup-section h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 1.75rem 0 0.75rem; display: flex; align-items: center; gap: 10px; }
+  .writeup-section h3::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--lime); border-radius: 1px; flex-shrink: 0; }
+  .writeup-section p { font-size: 15px; color: var(--text-secondary); line-height: 1.85; margin-bottom: 1rem; }
+
+  /* NETWORK DIAGRAM */
+  .network-diagram { display: flex; align-items: center; justify-content: center; gap: 0; margin: 1.5rem 0; flex-wrap: wrap; }
+  .net-node { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1.1rem; text-align: center; min-width: 120px; transition: border-color 0.2s; }
+  .net-node:hover { border-color: var(--border-hover); }
+  .net-node.kali { border-color: rgba(132,204,22,0.3); }
+  .net-node.pfsense { border-color: rgba(74,158,221,0.4); }
+  .net-node.ubuntu { border-color: rgba(46,196,182,0.3); }
+  .net-node .node-label { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+  .net-node .node-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .net-node .node-ip { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--teal); }
+  .net-node.kali .node-name { color: var(--lime); }
+  .net-node.pfsense .node-name { color: var(--accent); }
+  .net-node.ubuntu .node-name { color: var(--teal); }
+  .net-arrow { font-size: 16px; color: var(--text-muted); padding: 0 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .net-arrow span { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-muted); white-space: nowrap; }
+
+  /* SERVICE CARDS */
+  .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0; }
+  .service-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; transition: border-color 0.2s; }
+  .service-card:hover { border-color: var(--border-hover); }
+  .service-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .service-port { width: 48px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; background: rgba(132,204,22,0.1); border: 1px solid rgba(132,204,22,0.3); color: var(--lime); flex-shrink: 0; }
+  .service-card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .service-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .service-card ul li { font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .service-card ul li::before { content: '→'; color: var(--lime); font-size: 11px; margin-top: 2px; flex-shrink: 0; }
+
+  /* PCAP DOWNLOAD CARDS */
+  .pcap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .pcap-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.2s; }
+  .pcap-card:hover { border-color: rgba(132,204,22,0.4); transform: translateY(-2px); }
+  .pcap-icon { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--lime); }
+  .pcap-name { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .pcap-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .pcap-link { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--lime); text-decoration: none; margin-top: auto; display: inline-flex; align-items: center; gap: 5px; transition: gap 0.2s; }
+  .pcap-link:hover { gap: 8px; }
+
+  .code-block { background: var(--code-bg); border: 1px solid var(--border); border-left: 3px solid var(--lime); border-radius: 0 6px 6px 0; padding: 1rem 1.25rem; margin: 1rem 0; overflow-x: auto; }
+  .code-block-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .code-block code { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal); white-space: pre; display: block; line-height: 1.7; }
+  .code-block code .comment { color: var(--text-muted); font-style: italic; }
+  .code-block code .flag { color: var(--lime); }
+
+  .finding-box { background: rgba(132,204,22,0.05); border: 1px solid rgba(132,204,22,0.2); border-radius: 6px; padding: 1.25rem; margin: 1.25rem 0; }
+  .finding-box-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--lime); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .finding-box p { font-size: 14px; color: var(--text-secondary); margin: 0; }
+
+  .nmap-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 13px; }
+  .nmap-table th { background: rgba(74,158,221,0.1); color: var(--accent); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+  .nmap-table td { padding: 9px 14px; border: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+  .nmap-table td:first-child { font-family: 'DM Mono', monospace; color: var(--lime); font-size: 12px; white-space: nowrap; }
+  .nmap-table td.open { color: #4ade80; font-family: 'DM Mono', monospace; font-size: 12px; }
+  .nmap-table tr:hover td { background: rgba(74,158,221,0.04); }
+
+  .highlight-box { background: rgba(46,196,182,0.05); border: 1px solid rgba(46,196,182,0.2); border-radius: 6px; padding: 1.25rem; margin: 1.25rem 0; }
+  .highlight-box-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .highlight-box p { font-size: 14px; color: var(--text-secondary); margin: 0; }
+
+  .screenshot-placeholder { background: var(--card-bg); border: 1px dashed var(--border-hover); border-radius: 6px; padding: 2.5rem; text-align: center; margin: 1.25rem 0; }
+  .screenshot-placeholder p { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.05em; margin: 0; }
+  .project-footer { border-top: 1px solid var(--border); padding: 3rem 10%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .footer-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+  .footer-back:hover { color: var(--accent); }
+  .footer-copy { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
+  @media (max-width: 900px) { .content-wrapper { grid-template-columns: 1fr; } .sidebar { position: static; } .service-grid { grid-template-columns: 1fr; } nav { padding: 0 1.5rem; } .project-hero { padding: 7rem 6% 3rem; } .content-wrapper { padding: 3rem 6%; } .network-diagram { gap: 8px; } .net-arrow { display: none; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">~/spwarnick</a>
+  <a href="index.html#projects" class="nav-back">← Back to Portfolio</a>
+</nav>
+
+<div class="project-hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <p class="breadcrumb"><a href="index.html">Portfolio</a> &nbsp;/&nbsp; <a href="index.html#projects">Projects</a></p>
+  <h1>Network Traffic<br /><span class="accent">Generation & Capture</span></h1>
+  <div class="project-meta">
+    <div class="meta-item"><span class="meta-label">Level</span><span class="meta-value">Graduate Coursework</span></div>
+    <div class="meta-item"><span class="meta-label">Domain</span><span class="meta-value">Network Security Operations</span></div>
+    <div class="meta-item"><span class="meta-label">Captures</span><span class="meta-value">5 pcap files — recon, ssh, ftp, dns, http</span></div>
+    <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Hands-On Lab</span></div>
+  </div>
+  <div class="tool-tags">
+    <span class="tool-tag">Nmap</span>
+    <span class="tool-tag">Wireshark</span>
+    <span class="tool-tag">Hydra</span>
+    <span class="tool-tag">dig / curl</span>
+    <span class="tool-tag">pfSense</span>
+    <span class="tool-tag lime">Host Discovery</span>
+    <span class="tool-tag lime">Service Enumeration</span>
+    <span class="tool-tag lime">DNS-over-HTTPS</span>
+    <span class="tool-tag teal">Network Segmentation</span>
+    <span class="tool-tag teal">pcap Analysis</span>
+  </div>
+</div>
+
+<div class="content-wrapper">
+  <main class="main-content">
+
+    <div class="writeup-section" id="overview">
+      <p class="section-label">Overview</p>
+      <div class="section-divider"></div>
+      <h2>Lab Overview</h2>
+      <p>This module established the foundational lab environment for the Cybersecurity Operations course — a segmented virtual network built around pfSense as the central firewall/router, with Kali Linux on the WAN side and Ubuntu machines on the DMZ and LAN segments. The primary objective was to generate, capture, and analyze network traffic across five protocols: host/service discovery via Nmap, SSH, FTP, DNS, and HTTP. Each traffic type was captured as a pcap file using Wireshark and is available for download below.</p>
+
+      <h3>Lab Environment</h3>
+      <div class="network-diagram">
+        <div class="net-node kali">
+          <p class="node-label">Attacker / Analyst</p>
+          <p class="node-name">Kali Linux</p>
+          <p class="node-ip">WAN — 10.10.10.x</p>
+        </div>
+        <div class="net-arrow">⟷<span>Firewall Rules</span></div>
+        <div class="net-node pfsense">
+          <p class="node-label">Firewall / Router</p>
+          <p class="node-name">pfSense</p>
+          <p class="node-ip">WAN / DMZ / LAN</p>
+        </div>
+        <div class="net-arrow">⟷<span>Segmented</span></div>
+        <div class="net-node ubuntu">
+          <p class="node-label">Server / Target</p>
+          <p class="node-name">Ubuntu DMZ</p>
+          <p class="node-ip">DMZ — 192.168.20.10</p>
+        </div>
+      </div>
+
+      <p>pfSense enforced network segmentation between the WAN and DMZ/LAN segments, ensuring traffic had to pass through the firewall — mirroring a realistic enterprise network architecture where client machines and servers live in separate network zones.</p>
+    </div>
+
+    <div class="writeup-section" id="pcaps">
+      <p class="section-label">Evidence Files</p>
+      <div class="section-divider"></div>
+      <h2>pcap Downloads</h2>
+      <p>All five packet captures are hosted in the GitHub repository. Download and open in Wireshark to inspect the raw traffic generated during each lab exercise.</p>
+      <div class="pcap-grid">
+        <div class="pcap-card">
+          <p class="pcap-icon">⬡</p>
+          <p class="pcap-name">recon.pcap</p>
+          <p class="pcap-desc">Nmap ICMP/SYN ping scans and port/OS detection against Ubuntu DMZ</p>
+          <a href="recon.pcap" class="pcap-link" download>Download →</a>
+        </div>
+        <div class="pcap-card">
+          <p class="pcap-icon">⬡</p>
+          <p class="pcap-name">ssh.pcap</p>
+          <p class="pcap-desc">Encrypted SSH session from Kali WAN to Ubuntu DMZ including remote file creation</p>
+          <a href="ssh.pcap" class="pcap-link" download>Download →</a>
+        </div>
+        <div class="pcap-card">
+          <p class="pcap-icon">⬡</p>
+          <p class="pcap-name">ftp.pcap</p>
+          <p class="pcap-desc">FTP brute-force with Hydra, plaintext credential exchange, file transfer session</p>
+          <a href="ftp.pcap" class="pcap-link" download>Download →</a>
+        </div>
+        <div class="pcap-card">
+          <p class="pcap-icon">⬡</p>
+          <p class="pcap-name">dns.pcap</p>
+          <p class="pcap-desc">A, PTR, NS record queries and DNS-over-HTTPS to Cloudflare (1.1.1.1)</p>
+          <a href="dns.pcap" class="pcap-link" download>Download →</a>
+        </div>
+        <div class="pcap-card">
+          <p class="pcap-icon">⬡</p>
+          <p class="pcap-name">http.pcap</p>
+          <p class="pcap-desc">HTTP file transfer from Apache web server — browser and curl user-agents</p>
+          <a href="http.pcap" class="pcap-link" download>Download →</a>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <p class="highlight-box-title">SSL Key Log File</p>
+        <p>The DNS lab generated a <strong style="color:var(--text-primary)">sslkeys.log</strong> file via the <code style="font-family:'DM Mono',monospace;font-size:13px;">SSLKEYLOGFILE</code> environment variable. This file can be loaded into Wireshark (Preferences → Protocols → TLS → Pre-Master-Secret log) to decrypt the DoH HTTPS traffic in dns.pcap and inspect the underlying DNS queries in plaintext.</p>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="recon">
+      <p class="section-label">Module 1</p>
+      <div class="section-divider"></div>
+      <h2>Host & Service Discovery</h2>
+      <p>The reconnaissance module used Nmap to perform host discovery and service enumeration against the Ubuntu DMZ machine. Three scan types were executed — ICMP ping, SYN ping, and a full port/version/OS detection scan — with all traffic captured in Wireshark.</p>
+
+      <h3>Nmap Scan Progression</h3>
+      <div class="code-block">
+        <p class="code-block-label">Scan Commands</p>
+        <code><span class="comment"># 1. ICMP ping scan — identify online hosts</span>
+sudo nmap <span class="flag">-sn -PE</span> --send-ip 192.168.20.0/24
+
+<span class="comment"># 2. SYN ping scan — identify online hosts via TCP SYN</span>
+sudo nmap <span class="flag">-sn -PS</span> --send-ip 192.168.20.0/24
+
+<span class="comment"># 3. Port scan — identify open ports on Ubuntu DMZ</span>
+sudo nmap <span class="flag">-PS</span> 192.168.20.10
+
+<span class="comment"># 4. Full OS + version + service detection scan</span>
+sudo nmap <span class="flag">-Pn -sS -sV -O</span> 192.168.20.10 -oN scan_results.txt</code>
+      </div>
+
+      <h3>Discovered Open Ports — Ubuntu DMZ</h3>
+      <table class="nmap-table">
+        <thead><tr><th>Port</th><th>Service</th><th>Version</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td>21/tcp</td><td>FTP</td><td>vsftpd 3.0.3</td><td class="open">open</td></tr>
+          <tr><td>22/tcp</td><td>SSH</td><td>OpenSSH 8.2p1</td><td class="open">open</td></tr>
+          <tr><td>23/tcp</td><td>Telnet</td><td>Linux telnetd</td><td class="open">open</td></tr>
+          <tr><td>53/tcp</td><td>DNS</td><td>ISC BIND 9.16</td><td class="open">open</td></tr>
+          <tr><td>80/tcp</td><td>HTTP</td><td>Apache httpd 2.4</td><td class="open">open</td></tr>
+          <tr><td>3128/tcp</td><td>Squid Proxy</td><td>Squid http proxy 4.10</td><td class="open">open</td></tr>
+        </tbody>
+      </table>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Notable — OS Detection</p>
+        <p>The <code style="font-family:'DM Mono',monospace;font-size:13px;">-O</code> flag enabled Nmap's OS fingerprinting via TCP/IP stack analysis. The scan correctly identified the Ubuntu DMZ as a Linux host, demonstrating how OS detection works passively from packet-level behavioral differences between operating system implementations.</p>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="services">
+      <p class="section-label">Modules 2–5</p>
+      <div class="section-divider"></div>
+      <h2>Service Traffic Generation</h2>
+      <p>Following host and service discovery, each discovered service was exercised individually to generate protocol-specific traffic for capture and analysis.</p>
+
+      <div class="service-grid">
+        <div class="service-card" id="ssh">
+          <div class="service-card-header">
+            <div class="service-port">:22</div>
+            <p class="service-card-title">SSH — Encrypted Remote Session</p>
+          </div>
+          <ul>
+            <li>Initiated SSH session from Kali WAN to Ubuntu DMZ (seed@192.168.20.10)</li>
+            <li>Executed remote commands: pwd, cd, ls -a</li>
+            <li>Created a text file remotely: <code style="font-family:'DM Mono',monospace;font-size:12px;">Warnick-ssh.txt</code></li>
+            <li>Verified file contents with cat, then exited session</li>
+            <li>Wireshark capture confirms all data is TLS-encrypted — no plaintext visible</li>
+          </ul>
+        </div>
+
+        <div class="service-card" id="ftp">
+          <div class="service-card-header">
+            <div class="service-port">:21</div>
+            <p class="service-card-title">FTP — Brute-Force & File Transfer</p>
+          </div>
+          <ul>
+            <li>Generated username/password wordlists (6 entries each, including real credentials)</li>
+            <li>Launched Hydra brute-force: successfully cracked seed:dees credentials</li>
+            <li>Connected to FTP server, navigated to /srv/ftp, listed directory</li>
+            <li>Downloaded Warnick-ftpu.txt successfully (GET permitted)</li>
+            <li>Attempted upload — correctly blocked with permission denied (PUT restricted)</li>
+            <li>Wireshark capture shows FTP credentials transmitted in plaintext</li>
+          </ul>
+        </div>
+
+        <div class="service-card" id="dns">
+          <div class="service-card-header">
+            <div class="service-port">:53</div>
+            <p class="service-card-title">DNS — Record Types & DoH</p>
+          </div>
+          <ul>
+            <li>A record lookup: uvu.edu → 104.18.30.239</li>
+            <li>PTR reverse lookup: IP → hostname resolution</li>
+            <li>NS record lookup: identified authoritative name servers for uvu.edu</li>
+            <li>DNS-over-HTTPS query to Cloudflare 1.1.1.1 via curl</li>
+            <li>SSLKEYLOGFILE captured TLS session keys for DoH decryption in Wireshark</li>
+          </ul>
+        </div>
+
+        <div class="service-card" id="http">
+          <div class="service-card-header">
+            <div class="service-port">:80</div>
+            <p class="service-card-title">HTTP — Apache File Transfer</p>
+          </div>
+          <ul>
+            <li>Hosted soc-book.pdf on Apache web server running on Kali (10.10.10.10)</li>
+            <li>Retrieved file from Ubuntu LAN via browser (HTTP GET)</li>
+            <li>Retrieved same file via curl user-agent for comparison</li>
+            <li>Wireshark capture on Ubuntu LAN shows full HTTP transaction including headers</li>
+            <li>Both downloads confirmed present in Downloads directory</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="findings">
+      <p class="section-label">Findings</p>
+      <div class="section-divider"></div>
+      <h2>Key Findings</h2>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 1 — FTP Transmits Credentials in Plaintext</p>
+        <p>The ftp.pcap capture clearly shows the FTP username and password transmitted in plaintext — visible to any observer with network access. The Hydra brute-force succeeded in under a second against a 6-entry wordlist. This is why FTP has been superseded by SFTP and FTPS in modern environments, which encrypt the control channel.</p>
+      </div>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 2 — SSH Provides No Useful Payload Visibility</p>
+        <p>In contrast to FTP, the ssh.pcap shows only encrypted TLS records — the remote commands executed, the file created, and its contents are completely invisible to a passive observer. This is the fundamental security advantage of SSH over legacy protocols like Telnet and FTP.</p>
+      </div>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 3 — DNS-over-HTTPS Hides Queries from Passive Inspection</p>
+        <p>Standard DNS queries appear in plaintext in packet captures. The DoH query to 1.1.1.1 appeared as encrypted HTTPS traffic — indistinguishable from normal web browsing. However, the SSLKEYLOGFILE technique demonstrated that TLS session keys captured at query time can decrypt the traffic post-capture in Wireshark, a technique used by security analysts to inspect encrypted traffic in controlled environments.</p>
+      </div>
+
+      <div class="finding-box">
+        <p class="finding-box-title">Finding 4 — Nmap OS & Version Detection Is Highly Accurate</p>
+        <p>The <code style="font-family:'DM Mono',monospace;font-size:13px;">-sV -O</code> scan correctly identified all six running services with version numbers and the underlying OS. This level of detail from a single unauthenticated scan illustrates why service version disclosure (via banners and TCP/IP stack fingerprinting) is a significant reconnaissance risk that defenders should mitigate through banner suppression and firewall rules.</p>
+      </div>
+    </div>
+
+    <div class="writeup-section" id="takeaways">
+      <p class="section-label">Takeaways</p>
+      <div class="section-divider"></div>
+      <h2>Lessons & Takeaways</h2>
+      <p>This module built the practical foundation for the rest of the Cybersecurity Operations course — a working segmented lab environment with real traffic flowing between network zones. The pcap files generated here serve as baseline "known-good" captures that subsequent analysis modules can reference when identifying anomalous traffic.</p>
+      <p>The most valuable insight across all five captures is the stark contrast between encrypted and unencrypted protocols. SSH and DoH produced opaque captures; FTP and HTTP produced fully readable ones including credentials and file contents. This contrast makes a compelling case for encrypting all network services by default — a principle that underpins modern Zero Trust architecture.</p>
+      <div class="screenshot-placeholder"><p>[ Screenshots from lab submission available upon request ]</p></div>
+    </div>
+
+  </main>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Contents</p>
+      <ul class="toc-list">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#pcaps">pcap Downloads</a></li>
+        <li><a href="#recon">Host & Service Discovery</a></li>
+        <li><a href="#services">Service Traffic Generation</a></li>
+        <li><a href="#findings">Findings</a></li>
+        <li><a href="#takeaways">Takeaways</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Tools Used</p>
+      <ul class="sidebar-list">
+        <li>Nmap (recon & scanning)</li>
+        <li>Wireshark (capture)</li>
+        <li>Hydra (FTP brute-force)</li>
+        <li>dig / curl (DNS)</li>
+        <li>pfSense (firewall/router)</li>
+        <li>Apache Web Server</li>
+        <li>Kali Linux / Ubuntu</li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">Protocols Captured</p>
+      <ul class="sidebar-list">
+        <li>ICMP (ping scan)</li>
+        <li>TCP SYN (port scan)</li>
+        <li>SSH (encrypted shell)</li>
+        <li>FTP (plaintext transfer)</li>
+        <li>DNS (A, PTR, NS, DoH)</li>
+        <li>HTTP (file transfer)</li>
+      </ul>
+    </div>
+    <div class="sidebar-card">
+      <p class="sidebar-card-title">pcap Files</p>
+      <ul class="sidebar-list">
+        <li><a href="recon.pcap" download style="color:var(--lime);text-decoration:none;">recon.pcap ↓</a></li>
+        <li><a href="ssh.pcap" download style="color:var(--lime);text-decoration:none;">ssh.pcap ↓</a></li>
+        <li><a href="ftp.pcap" download style="color:var(--lime);text-decoration:none;">ftp.pcap ↓</a></li>
+        <li><a href="dns.pcap" download style="color:var(--lime);text-decoration:none;">dns.pcap ↓</a></li>
+        <li><a href="http.pcap" download style="color:var(--lime);text-decoration:none;">http.pcap ↓</a></li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<div class="project-footer">
+  <a href="index.html#projects" class="footer-back">← Back to Projects</a>
+  <p class="footer-copy">Spencer Warnick — Cybersecurity Portfolio</p>
+</div>
+</body>
+</html>
